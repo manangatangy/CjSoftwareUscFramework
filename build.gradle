@@ -2,13 +2,9 @@
 
 ext {
     buildToolsVersion='27.0.0'
-    supportLibVersion='26.0.1'
+    supportLibVersion='26.1.0'
     playServicesVersion='11.0.4'
-
-    ucsFrameworkVersion='1.0.0'
-    ucsFrameworkChannel='CANARY'
-    ucsFrameworkGroup='com.cjsoftware'
-    ucsFrameworkArtefactId='ucsFramework'
+    daggerVersion='2.9'
 }
 
 buildscript {

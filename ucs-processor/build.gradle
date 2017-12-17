@@ -4,6 +4,12 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
+ext {
+    ARTIFACT_ID="ucs-processor"
+    NAME="UCS Annotation Processor"
+    PACKAGING='jar'
+}
+
 sourceCompatibility = "1.7"
 targetCompatibility = "1.7"
 
@@ -16,4 +22,4 @@ dependencies {
     compile project(path: ':ucs-library')
 }
 
-//apply from: '../mvn_deploy.gradle'
+apply from: "../maven-publish.gradle"

@@ -2,6 +2,12 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
+ext {
+    ARTIFACT_ID="ucs-platform-android"
+    NAME="UCS Android Library"
+    PACKAGING='aar'
+}
+
 android {
     compileSdkVersion 26
     buildToolsVersion "$buildToolsVersion"
@@ -18,17 +24,20 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            consumerProguardFiles "consumer-proguard-rules.pro"
         }
     }
 }
 
 dependencies {
+    provided project(path: ':ucs-library')
+
     provided "com.android.support:support-annotations:$supportLibVersion"
     provided "com.android.support:appcompat-v7:$supportLibVersion"
+    provided "com.google.dagger:dagger:${daggerVersion}"
+
     compile "com.android.support:recyclerview-v7:$supportLibVersion"
 
-
-    provided project(path: ':ucs-library')
-    provided 'com.google.dagger:dagger:2.9'
-
 }
+
+apply from: "../maven-publish.gradle"
