@@ -116,8 +116,8 @@ public abstract class AbstractUiActivity<UiT extends AbstractUcsContract.Abstrac
   }
 
   @Override
-  protected void onPreStatePreserve() {
-    super.onPreStatePreserve();
+  protected void onBeforeStatePreserve() {
+    super.onBeforeStatePreserve();
     setUserNavigationRequestListener(null);
     ((UiBinder<UiT>) mContractBroker).bindToImplementation(null);
     ((ScreenNavigationBinder<NavigationT>) mContractBroker).bindToImplementation(null);
@@ -125,8 +125,8 @@ public abstract class AbstractUiActivity<UiT extends AbstractUcsContract.Abstrac
 
 
   @Override
-  protected void onStateRestored() {
-    super.onStateRestored();
+  protected void onAfterStateRestored() {
+    super.onAfterStateRestored();
     ((UiBinder<UiT>) mContractBroker).bindToImplementation((UiT) this);
     ((ScreenNavigationBinder<NavigationT>) mContractBroker).bindToImplementation((NavigationT) this);
 

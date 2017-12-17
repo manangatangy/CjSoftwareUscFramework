@@ -102,16 +102,16 @@ public abstract class  AbstractUiFragment<UiT extends AbstractUi,
   }
 
   @Override
-  protected void onPreStatePreserve() {
-    super.onPreStatePreserve();
+  protected void onBeforeStatePreserve() {
+    super.onBeforeStatePreserve();
     ((UiBinder<UiT>) mContractBroker).bindToImplementation(null);
     ((ScreenNavigationBinder<NavigationT>) mContractBroker).bindToImplementation(null);
   }
 
 
   @Override
-  protected void onStateRestored() {
-    super.onStateRestored();
+  protected void onAfterStateRestored() {
+    super.onAfterStateRestored();
     ((UiBinder<UiT>) mContractBroker).bindToImplementation((UiT) this);
     ((ScreenNavigationBinder<NavigationT>) mContractBroker).bindToImplementation((NavigationT) this);
   }

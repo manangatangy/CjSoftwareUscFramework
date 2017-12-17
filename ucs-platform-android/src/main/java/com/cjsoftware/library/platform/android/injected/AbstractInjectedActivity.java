@@ -10,71 +10,73 @@ import javax.inject.Inject;
 import dagger.Lazy;
 
 /**
- * Created by chris on 11/13/2017.
+ * Extends the AbstractCoreActivity by adding Dagger Dependency Injection
  */
-
 public abstract class AbstractInjectedActivity<ComponentT>
-    extends AbstractCoreActivity {
+        extends AbstractCoreActivity {
 
-  @Inject
-  Lazy<ObjectRegistry> mObjectRegistry;
+    @Inject
+    Lazy<ObjectRegistry> mObjectRegistry;
+
     private ComponentT mComponent;
 
-  // region Lifecycle
+    // region Lifecycle
 
-  /**
-   * Perform any activity configuration required before content is set. This is where you would specify any special
-   * window options etc
-   */
-  @Override
-  protected void onPreconfigure() {
-    super.onPreconfigure();
+    /**
+     * Obtains the Dagger component from {@link #createComponent()}
+     * Calls {@link #injectFields(Object), passing it the Dagger Component}
+     * See {@link AbstractCoreActivity#onPreconfigure()}
+     */
+    @Override
+    protected void onPreconfigure() {
+        super.onPreconfigure();
 
-    mComponent = createComponent();
-    CreateComponentInterceptor createComponentInterceptor = InjectionInstrumentation.getInstance().getCreateComponentInterceptor();
+        mComponent = createComponent();
+        CreateComponentInterceptor createComponentInterceptor = InjectionInstrumentation.getInstance().getCreateComponentInterceptor();
 
-    if (createComponentInterceptor != null) {
-      mComponent = (ComponentT) createComponentInterceptor.interceptCreateComponent(this, mComponent);
+        if (createComponentInterceptor != null) {
+            mComponent = (ComponentT) createComponentInterceptor.interceptCreateComponent(this, mComponent);
+        }
+
+        injectFields(mComponent);
     }
 
-    injectFields(mComponent);
-  }
+    // endregion
 
-  // endregion
+    // region Protected helper methods
 
-  // region Protected helper methods
+    /**
+     * Get the Dagger component for this object
+     */
+    protected ComponentT getComponent() {
+        return mComponent;
+    }
 
-  /**
-   * Get the Dagger component for this object
-   */
-  protected ComponentT getComponent() {
-    return mComponent;
-  }
+    /**
+     * Get the object registry.
+     */
+    @NonNull
+    protected ObjectRegistry getObjectRegistry() {
+        return mObjectRegistry.get();
+    }
 
-  /**
-   * Get the object registry.
-   */
-  @NonNull
-  protected ObjectRegistry getObjectRegistry() {
-    return mObjectRegistry.get();
-  }
-
-  // endregion
+    // endregion
 
 
-  // region Mandatory overrides
+    // region Mandatory overrides
 
-  /**
-   * Instantiate the dagger component object to be used for providing implementation objects
-   */
-  @NonNull
-  protected abstract ComponentT createComponent();
+    /**
+     * Instantiate the dagger component object to be used for providing implementation objects
+     */
+    @NonNull
+    protected abstract ComponentT createComponent();
 
-  /**
-   * Call the injection method on the supplied dagger component to inject fields within this object
-   */
-  protected abstract void injectFields(@NonNull ComponentT component);
+    /**
+     * Call the injection method on the supplied dagger component to inject fields within this
+     * object
+     */
+    protected abstract void injectFields(@NonNull ComponentT component);
 
-  // endregion
+    // endregion
 
 }
