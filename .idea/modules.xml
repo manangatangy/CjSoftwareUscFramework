@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/ucs-library/ucs-library.iml" filepath="$PROJECT_DIR$/ucs-library/ucs-library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ucs-platform-android/ucs-platform-android.iml" filepath="$PROJECT_DIR$/ucs-platform-android/ucs-platform-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ucs-processor/ucs-processor.iml" filepath="$PROJECT_DIR$/ucs-processor/ucs-processor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ucsFramework.iml" filepath="$PROJECT_DIR$/ucsFramework.iml" />
+    </modules>
+  </component>
+</project>
