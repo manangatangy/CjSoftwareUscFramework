@@ -75,7 +75,7 @@ public abstract class AbstractCoreActivity
    * @return The first class implementing the interface or null if not found.
    */
   @Nullable
-  protected <InterfaceT> InterfaceT findFirstImplementationOf(@NonNull Class<?> interfaceT) {
+  protected final <InterfaceT> InterfaceT findFirstImplementationOf(@NonNull Class<?> interfaceT) {
     NestedHost nestedHost = this;
     InterfaceT foundImplementation = null;
     while (nestedHost != null && foundImplementation == null) {
