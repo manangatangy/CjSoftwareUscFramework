@@ -14,50 +14,51 @@ import javax.tools.Diagnostic;
 
 public abstract class AbstractUcsElementProcessor<ElementT extends Element> {
 
-  protected ProcessorModel processorModel;
-  protected ProcessingEnvironment processingEnvironment;
+    protected ProcessorModel processorModel;
+    protected ProcessingEnvironment processingEnvironment;
     private boolean fatalError = false;
 
 
-  public AbstractUcsElementProcessor(ProcessingEnvironment processingEnvironment, ProcessorModel processorModel) {
-    this.processingEnvironment = processingEnvironment;
-    this.processorModel = processorModel;
-  }
+    public AbstractUcsElementProcessor(ProcessingEnvironment processingEnvironment,
+                                       ProcessorModel processorModel) {
+        this.processingEnvironment = processingEnvironment;
+        this.processorModel = processorModel;
+    }
 
 
-  private String messageDescribeElement(String message, Element element) {
-    Elements elementUtils = processingEnvironment.getElementUtils();
-    return String.format("%s (%s in %s)",
-        message,
-        element.getSimpleName(),
-        elementUtils.getPackageOf(element).getQualifiedName());
-  }
+    private String messageDescribeElement(String message, Element element) {
+        Elements elementUtils = processingEnvironment.getElementUtils();
+        return String.format("%s (%s in %s)",
+                message,
+                element.getSimpleName(),
+                elementUtils.getPackageOf(element).getQualifiedName());
+    }
 
 
-  protected void warningMessage(String message, Element element) {
-    processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING,
-        messageDescribeElement(message, element),
-        element);
-  }
+    protected void warningMessage(String message, Element element) {
+        processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING,
+                messageDescribeElement(message, element),
+                element);
+    }
 
-  protected void errorMessage(String message, Element element) {
-    processingEnvironment.getMessager().printMessage(Diagnostic.Kind.ERROR,
-        messageDescribeElement(message, element),
-        element);
-  }
+    protected void errorMessage(String message, Element element) {
+        processingEnvironment.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                messageDescribeElement(message, element),
+                element);
+    }
 
-  protected void fatalErrorMessage(String message, Element element) {
-    fatalError = true;
-    errorMessage(message, element);
-  }
+    protected void fatalErrorMessage(String message, Element element) {
+        fatalError = true;
+        errorMessage(message, element);
+    }
 
-  public boolean isFatalErrorEncountered() {
-    return fatalError;
-  }
+    public boolean isFatalErrorEncountered() {
+        return fatalError;
+    }
 
-  protected String sanitiseClassName(String className) {
-    return className.replace('.', '$');
-  }
+    protected String sanitiseClassName(String className) {
+        return className.replace('.', '$');
+    }
 
 }
 

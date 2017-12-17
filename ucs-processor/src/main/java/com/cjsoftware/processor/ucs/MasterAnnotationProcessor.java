@@ -13,6 +13,7 @@ import com.cjsoftware.processor.ucs.subprocessors.UcsContractProcessor;
 
 import java.lang.annotation.Annotation;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -29,77 +30,93 @@ import javax.lang.model.element.TypeElement;
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 
-// @AutoService(UcsAnnotationProcessor.class)
 public class MasterAnnotationProcessor extends AbstractProcessor {
 
-  private ProcessingEnvironment processingEnvironment;
-  private ProcessorModel model;
+    public static final String OPTION_NULLABILITY_PACKAGE = "nullabilitypackage";
+    public static final String OPTION_NONNULL_ANNOTATION_NAME = "nonnullannotationname";
 
-  @Override
-  public synchronized void init(ProcessingEnvironment env) {
-    super.init(env);
-    processingEnvironment = env;
-    model = new ProcessorModel();
-  }
+    private ProcessingEnvironment processingEnvironment;
+    private ProcessorModel model;
 
-  @Override
-  public Set<String> getSupportedAnnotationTypes() {
-    Set<String> types = new LinkedHashSet<>();
+    @Override
+    public synchronized void init(ProcessingEnvironment env) {
+        super.init(env);
+        processingEnvironment = env;
 
-    types.add(UcsContract.class.getCanonicalName());
-    types.add(Preserve.class.getCanonicalName());
-    types.add(PreservationRuleGroup.class.getCanonicalName());
-    types.add(PreservationRule.class.getCanonicalName());
+        Map<String, String> options = env.getOptions();
 
-    return types;
-  }
+        String nullabilityPackageName = "android.support.annotation";
+        String nonNullAnnotationName = "NonNull";
 
+        if (options.containsKey(OPTION_NULLABILITY_PACKAGE)) {
+            nullabilityPackageName = options.get(OPTION_NULLABILITY_PACKAGE);
+        }
 
-  @Override
-  public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        if (options.containsKey(OPTION_NONNULL_ANNOTATION_NAME)) {
+            nonNullAnnotationName = options.get(OPTION_NONNULL_ANNOTATION_NAME);
+        }
 
-    boolean fatalError = false;
-
-    // Build preservation strategy rules first (preservation is dependent on them)
-
-    if (!fatalError) {
-      fatalError = passElementSetToProcessor(roundEnv,
-          new PreservationRuleGroupProcessor(processingEnvironment, model),
-          PreservationRuleGroup.class);
+        model = new ProcessorModel(nullabilityPackageName, nonNullAnnotationName);
     }
 
-    if (!fatalError) {
-      fatalError = passElementSetToProcessor(roundEnv,
-          new PreservationRuleProcessor(processingEnvironment, model),
-          PreservationRule.class);
+    @Override
+    public Set<String> getSupportedAnnotationTypes() {
+        Set<String> types = new LinkedHashSet<>();
+
+        types.add(UcsContract.class.getCanonicalName());
+        types.add(Preserve.class.getCanonicalName());
+        types.add(PreservationRuleGroup.class.getCanonicalName());
+        types.add(PreservationRule.class.getCanonicalName());
+
+        return types;
     }
 
-    if (!fatalError) {
-      fatalError = passElementSetToProcessor(roundEnv,
-          new PreserveUiStateProcessor(processingEnvironment, model),
-          Preserve.class);
+
+    @Override
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+
+        boolean fatalError = false;
+
+        // Build preservation strategy rules first (preservation is dependent on them)
+
+        if (!fatalError) {
+            fatalError = passElementSetToProcessor(roundEnv,
+                    new PreservationRuleGroupProcessor(processingEnvironment, model),
+                    PreservationRuleGroup.class);
+        }
+
+        if (!fatalError) {
+            fatalError = passElementSetToProcessor(roundEnv,
+                    new PreservationRuleProcessor(processingEnvironment, model),
+                    PreservationRule.class);
+        }
+
+        if (!fatalError) {
+            fatalError = passElementSetToProcessor(roundEnv,
+                    new PreserveUiStateProcessor(processingEnvironment, model),
+                    Preserve.class);
+        }
+
+        if (!fatalError) {
+            fatalError = passElementSetToProcessor(roundEnv,
+                    new UcsContractProcessor(processingEnvironment, model),
+                    UcsContract.class);
+        }
+
+        return false;
     }
 
-    if (!fatalError) {
-      fatalError = passElementSetToProcessor(roundEnv,
-          new UcsContractProcessor(processingEnvironment, model),
-          UcsContract.class);
+    private boolean passElementSetToProcessor(RoundEnvironment roundEnv, AbstractUcsElementSetProcessor processor, Class<? extends Annotation> annotation) {
+        Set<? extends Element> elementSet = roundEnv.getElementsAnnotatedWith(annotation);
+
+        if (elementSet.size() > 0) {
+
+            processor.processElements(elementSet);
+            return processor.isFatalErrorEncountered();
+
+        } else {
+            return false;
+        }
     }
-
-    return false;
-  }
-
-  private boolean passElementSetToProcessor(RoundEnvironment roundEnv, AbstractUcsElementSetProcessor processor, Class<? extends Annotation> annotation) {
-    Set<? extends Element> elementSet = roundEnv.getElementsAnnotatedWith(annotation);
-
-    if (elementSet.size() > 0) {
-
-      processor.processElements(elementSet);
-      return processor.isFatalErrorEncountered();
-
-    } else {
-      return false;
-    }
-  }
 
 }
