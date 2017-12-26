@@ -16,10 +16,10 @@ public interface BaseUcsContract {
   }
 
   interface BaseCoordinatorContract extends UserNavigationRequestListener {
+    void onInitialize();
   }
 
   interface BaseStateManagerContract {
   }
-
 
 }
