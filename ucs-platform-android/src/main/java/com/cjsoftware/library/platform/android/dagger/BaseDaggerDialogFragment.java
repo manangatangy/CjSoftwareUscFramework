@@ -1,11 +1,11 @@
-package com.cjsoftware.library.platform.android.injected;
-
-import com.cjsoftware.library.core.ObjectRegistry;
-import com.cjsoftware.library.platform.android.core.AbstractCoreActivity;
-import com.cjsoftware.library.platform.android.core.AbstractCoreFragment;
-import com.cjsoftware.library.platform.android.core.facility.MainLooperExecutor;
+package com.cjsoftware.library.platform.android.dagger;
 
 import android.support.annotation.NonNull;
+
+import com.cjsoftware.library.core.ObjectRegistry;
+import com.cjsoftware.library.platform.android.core.BaseULActivity;
+import com.cjsoftware.library.platform.android.core.BaseULDialogFragment;
+import com.cjsoftware.library.platform.android.core.facility.MainLooperExecutor;
 
 import java.util.concurrent.Executor;
 
@@ -17,8 +17,8 @@ import dagger.Lazy;
 /**
  * Extends the AbstractCoreFragment by adding Dagger Dependency Injection
  */
-public abstract class AbstractInjectedFragment<ComponentT>
-        extends AbstractCoreFragment {
+public abstract class BaseDaggerDialogFragment<ComponentT>
+        extends BaseULDialogFragment {
 
     @Inject
     Lazy<ObjectRegistry> mObjectRegistry;
@@ -34,7 +34,7 @@ public abstract class AbstractInjectedFragment<ComponentT>
     /**
      * Obtains the Dagger component from {@link #createComponent()}
      * Calls {@link #injectFields(Object), passing it the Dagger Component}
-     * See {@link AbstractCoreActivity#onPreconfigure()}
+     * See {@link BaseULActivity#onPreconfigure()}
      */
     @Override
     protected void onPreconfigure() {

@@ -1,4 +1,4 @@
-package com.cjsoftware.library.platform.android.injected;
+package com.cjsoftware.library.platform.android.dagger;
 
 /**
  * Created by chris on 11/13/2017.

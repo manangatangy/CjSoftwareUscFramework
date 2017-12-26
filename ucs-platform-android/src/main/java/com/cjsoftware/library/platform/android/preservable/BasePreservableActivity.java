@@ -1,18 +1,18 @@
 package com.cjsoftware.library.platform.android.preservable;
 
 import com.cjsoftware.library.core.ObjectRegistry;
-import com.cjsoftware.library.platform.android.injected.AbstractInjectedActivity;
+import com.cjsoftware.library.platform.android.dagger.BaseDaggerActivity;
 import com.cjsoftware.library.uistatepreservation.StatePreservationManager;
 
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
 
 /**
- * Extends the {@link AbstractInjectedActivity} by adding support for view and field state preservation
+ * Extends the {@link BaseDaggerActivity} by adding support for view and field state preservation
  * using the state preservation framework
  */
-public abstract class AbstractPreservableActivity<ComponentT>
-        extends AbstractInjectedActivity<ComponentT> {
+public abstract class BasePreservableActivity<ComponentT>
+        extends BaseDaggerActivity<ComponentT> {
 
     // region Private fields
     private static final String STATE_PRESERVATION_MANAGER_KEY = "statepreservationmanager";

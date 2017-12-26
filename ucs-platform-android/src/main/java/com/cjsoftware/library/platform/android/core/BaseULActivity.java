@@ -17,6 +17,7 @@ import java.lang.ref.WeakReference;
 
 /**
  * Created by chris on 10/29/2017.
+ * Base Unified Lifecycle Activity
  * Provides "unified" Fragment/Activity lifecycle
  * Adds UserNavigation support (abstract back and up heirarchy handling)
  * Adds Nestedhost support (ability to recurse parent from fragment to activity)
@@ -24,7 +25,7 @@ import java.lang.ref.WeakReference;
  * on NestedHost)
  */
 
-public abstract class AbstractCoreActivity
+public abstract class BaseULActivity
         extends AppCompatActivity
         implements UserNavigationRequestProvider,
         NestedHost {

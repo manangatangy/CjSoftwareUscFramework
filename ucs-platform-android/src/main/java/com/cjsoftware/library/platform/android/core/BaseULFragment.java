@@ -3,8 +3,6 @@ package com.cjsoftware.library.platform.android.core;
 import com.cjsoftware.library.core.UserNavigationRequest;
 import com.cjsoftware.library.core.UserNavigationRequestListener;
 import com.cjsoftware.library.platform.android.core.contract.NestedHost;
-import com.cjsoftware.library.platform.android.core.helper.Runnable1Param;
-import com.cjsoftware.library.platform.android.preservable.AbstractPreservableFragment;
 
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
@@ -18,9 +16,15 @@ import android.view.ViewGroup;
 
 /**
  * Created by chris on 10/29/2017.
+ * Base Unified Lifecycle Fragment
+ * Provides "unified" Fragment/Activity lifecycle
+ * Adds UserNavigation support (abstract back and up heirarchy handling)
+ * Adds Nestedhost support (ability to recurse parent from fragment to activity)
+ * Adds findFirstImplementationOf (ability to search for an implementation of and interface; built
+ * on NestedHost)
  */
 
-public abstract class AbstractCoreFragment
+public abstract class BaseULFragment
         extends Fragment
         implements UserNavigationRequestListener,
         NestedHost {

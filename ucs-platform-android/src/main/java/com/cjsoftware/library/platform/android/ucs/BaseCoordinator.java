@@ -2,7 +2,10 @@ package com.cjsoftware.library.platform.android.ucs;
 
 
 import com.cjsoftware.library.core.UserNavigationRequest;
-import com.cjsoftware.library.ucs.AbstractUcsContract;
+import com.cjsoftware.library.ucs.BaseUcsContract;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseScreenNavigationContract;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseStateManagerContract;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseUiContract;
 import com.cjsoftware.library.ucs.accessor.StateManagerAccessor;
 import com.cjsoftware.library.ucs.binder.ScreenNavigationBinder;
 import com.cjsoftware.library.ucs.binder.UiBinder;
@@ -14,21 +17,21 @@ import java.lang.ref.WeakReference;
  * @date 30 Jul 2017
  */
 
-public abstract class AbstractCoordinator<UiT extends AbstractUcsContract.AbstractUi,
-    StateManagerT extends AbstractUcsContract.AbstractStateManager,
-    NavigationT extends AbstractUcsContract.AbstractScreenNavigation>
+public abstract class BaseCoordinator<UiT extends BaseUiContract,
+    StateManagerT extends BaseStateManagerContract,
+    NavigationT extends BaseScreenNavigationContract>
 
-    implements AbstractUcsContract.AbstractCoordinator,
-    UiBinder<UiT>,
-    ScreenNavigationBinder<NavigationT>,
-    StateManagerAccessor<StateManagerT> {
+        implements BaseUcsContract.BaseCoordinatorContract,
+                   UiBinder<UiT>,
+                   ScreenNavigationBinder<NavigationT>,
+                   StateManagerAccessor<StateManagerT> {
 
   private final StateManagerT mStateManager;
 
   private WeakReference<UiT> mUi = new WeakReference<>(null);
   private WeakReference<NavigationT> mNavigation = new WeakReference<>(null);
 
-  public AbstractCoordinator(StateManagerT stateManager) {
+  public BaseCoordinator(StateManagerT stateManager) {
     mStateManager = stateManager;
   }
 

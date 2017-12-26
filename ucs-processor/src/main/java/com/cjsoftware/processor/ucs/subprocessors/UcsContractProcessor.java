@@ -1,6 +1,9 @@
 package com.cjsoftware.processor.ucs.subprocessors;
 
-import com.cjsoftware.library.ucs.AbstractUcsContract;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseCoordinatorContract;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseScreenNavigationContract;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseStateManagerContract;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseUiContract;
 import com.cjsoftware.library.ucs.accessor.CoordinatorAccessor;
 import com.cjsoftware.library.ucs.accessor.StateManagerAccessor;
 import com.cjsoftware.library.ucs.binder.ScreenNavigationBinder;
@@ -67,20 +70,20 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
         String qualifiedPackageName = packageElement.getQualifiedName().toString();
 
 
-        TypeElement uiContract = findDescendentOf(contractSpec, AbstractUcsContract.AbstractUi.class);
+        TypeElement uiContract = findDescendentOf(contractSpec, BaseUiContract.class);
         ProxyQueueBuilder uiProxyQueueBuilder = new ProxyQueueBuilder(processingEnvironment, processorModel, qualifiedPackageName, false, true);
         ClassName uiProxyQueueClass = uiProxyQueueBuilder.buildClass(uiContract);
 
-        TypeElement coordinatorContract = findDescendentOf(contractSpec, AbstractUcsContract.AbstractCoordinator.class);
+        TypeElement coordinatorContract = findDescendentOf(contractSpec, BaseCoordinatorContract.class);
         ProxyQueueBuilder coordinatorProxyQueueBuilder = new ProxyQueueBuilder(processingEnvironment, processorModel, qualifiedPackageName, true, true);
         ClassName coordinatorProxyQueueClass = coordinatorProxyQueueBuilder.buildClass(coordinatorContract);
 
-        TypeElement screenNavigationContract = findDescendentOf(contractSpec, AbstractUcsContract.AbstractScreenNavigation.class);
+        TypeElement screenNavigationContract = findDescendentOf(contractSpec, BaseScreenNavigationContract.class);
         ProxyQueueBuilder screenNavigationProxyQueueBuilder = new ProxyQueueBuilder(processingEnvironment, processorModel, qualifiedPackageName, false, true);
         ClassName screenNavigationProxyQueueClass = screenNavigationProxyQueueBuilder.buildClass(screenNavigationContract);
 
 
-        TypeElement stateManagerContract = findDescendentOf(contractSpec, AbstractUcsContract.AbstractStateManager.class);
+        TypeElement stateManagerContract = findDescendentOf(contractSpec, BaseStateManagerContract.class);
 
         TypeSpec.Builder contractBrokerClass = TypeSpec.classBuilder(generatedContractBrokerClassName)
                 .addModifiers(Modifier.PUBLIC)

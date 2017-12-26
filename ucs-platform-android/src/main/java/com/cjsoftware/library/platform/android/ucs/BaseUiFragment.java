@@ -3,10 +3,11 @@ package com.cjsoftware.library.platform.android.ucs;
 import com.cjsoftware.library.core.ObjectRegistry;
 import com.cjsoftware.library.core.UserNavigationRequest;
 import com.cjsoftware.library.core.UserNavigationRequestListener;
-import com.cjsoftware.library.platform.android.preservable.AbstractPreservableFragment;
-import com.cjsoftware.library.ucs.AbstractUcsContract;
-import com.cjsoftware.library.ucs.AbstractUcsContract.AbstractScreenNavigation;
-import com.cjsoftware.library.ucs.AbstractUcsContract.AbstractUi;
+import com.cjsoftware.library.platform.android.preservable.BasePreservableFragment;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseCoordinatorContract;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseScreenNavigationContract;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseStateManagerContract;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseUiContract;
 import com.cjsoftware.library.ucs.accessor.CoordinatorAccessor;
 import com.cjsoftware.library.ucs.accessor.StateManagerAccessor;
 import com.cjsoftware.library.ucs.binder.ScreenNavigationBinder;
@@ -21,17 +22,17 @@ import android.support.annotation.NonNull;
  * @date 30 Jul 2017
  */
 
-public abstract class  AbstractUiFragment<UiT extends AbstractUi,
-                                          CoordinatorT extends AbstractUcsContract.AbstractCoordinator,
-                                          StateManagerT extends AbstractUcsContract.AbstractStateManager,
-                                          NavigationT extends AbstractScreenNavigation,
+public abstract class BaseUiFragment<UiT extends BaseUiContract,
+                                          CoordinatorT extends BaseCoordinatorContract,
+                                          StateManagerT extends BaseStateManagerContract,
+                                          NavigationT extends BaseScreenNavigationContract,
                                           ComponentT>
 
-    extends AbstractPreservableFragment<ComponentT>
+        extends BasePreservableFragment<ComponentT>
 
-    implements AbstractUi,
-    UserNavigationRequestListener,
-    AbstractScreenNavigation {
+        implements BaseUiContract,
+                   UserNavigationRequestListener,
+                   BaseScreenNavigationContract {
 
   // region Private fields
   private static final String STATE_COORDINATOR = "coordinator";

@@ -3,8 +3,11 @@ package com.cjsoftware.library.platform.android.ucs;
 import com.cjsoftware.library.core.ObjectRegistry;
 import com.cjsoftware.library.core.UserNavigationRequest;
 import com.cjsoftware.library.core.UserNavigationRequestListener;
-import com.cjsoftware.library.platform.android.preservable.AbstractPreservableActivity;
-import com.cjsoftware.library.ucs.AbstractUcsContract;
+import com.cjsoftware.library.platform.android.preservable.BasePreservableActivity;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseCoordinatorContract;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseScreenNavigationContract;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseStateManagerContract;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseUiContract;
 import com.cjsoftware.library.ucs.accessor.CoordinatorAccessor;
 import com.cjsoftware.library.ucs.accessor.StateManagerAccessor;
 import com.cjsoftware.library.ucs.binder.ScreenNavigationBinder;
@@ -19,16 +22,16 @@ import android.support.annotation.NonNull;
  * @date 30 Jul 2017
  * AbstractUiActivity adds Ucs (Ui, Coordinator, Statemanager - MVP by any other name) to PreservableActivity
  */
-public abstract class AbstractUiActivity<UiT extends AbstractUcsContract.AbstractUi,
-    CoordinatorT extends AbstractUcsContract.AbstractCoordinator,
-    StateManagerT extends AbstractUcsContract.AbstractStateManager,
-    NavigationT extends AbstractUcsContract.AbstractScreenNavigation,
+public abstract class BaseUiActivity<UiT extends BaseUiContract,
+    CoordinatorT extends BaseCoordinatorContract,
+    StateManagerT extends BaseStateManagerContract,
+    NavigationT extends BaseScreenNavigationContract,
     ComponentT>
 
-    extends AbstractPreservableActivity<ComponentT>
+        extends BasePreservableActivity<ComponentT>
 
-    implements AbstractUcsContract.AbstractUi,
-    AbstractUcsContract.AbstractScreenNavigation {
+        implements BaseUiContract,
+                   BaseScreenNavigationContract {
 
 
   // region Private fields

@@ -1,22 +1,31 @@
-package com.cjsoftware.library.platform.android.injected;
+package com.cjsoftware.library.platform.android.dagger;
 
 import com.cjsoftware.library.core.ObjectRegistry;
-import com.cjsoftware.library.platform.android.core.AbstractCoreActivity;
+import com.cjsoftware.library.platform.android.core.BaseULActivity;
+import com.cjsoftware.library.platform.android.core.BaseULFragment;
+import com.cjsoftware.library.platform.android.core.facility.MainLooperExecutor;
 
 import android.support.annotation.NonNull;
 
+import java.util.concurrent.Executor;
+
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import dagger.Lazy;
 
 /**
- * Extends the AbstractCoreActivity by adding Dagger Dependency Injection
+ * Extends the AbstractCoreFragment by adding Dagger Dependency Injection
  */
-public abstract class AbstractInjectedActivity<ComponentT>
-        extends AbstractCoreActivity {
+public abstract class BaseDaggerFragment<ComponentT>
+        extends BaseULFragment {
 
     @Inject
     Lazy<ObjectRegistry> mObjectRegistry;
+
+    @Inject
+    @Named(MainLooperExecutor.INJECTOR_NAME)
+    Lazy<Executor> mMainLooperExecutor;
 
     private ComponentT mComponent;
 
@@ -25,13 +34,14 @@ public abstract class AbstractInjectedActivity<ComponentT>
     /**
      * Obtains the Dagger component from {@link #createComponent()}
      * Calls {@link #injectFields(Object), passing it the Dagger Component}
-     * See {@link AbstractCoreActivity#onPreconfigure()}
+     * See {@link BaseULActivity#onPreconfigure()}
      */
     @Override
     protected void onPreconfigure() {
         super.onPreconfigure();
 
         mComponent = createComponent();
+
         CreateComponentInterceptor createComponentInterceptor = InjectionInstrumentation.getInstance().getCreateComponentInterceptor();
 
         if (createComponentInterceptor != null) {
@@ -39,11 +49,22 @@ public abstract class AbstractInjectedActivity<ComponentT>
         }
 
         injectFields(mComponent);
+
     }
 
     // endregion
 
     // region Protected helper methods
+
+    /**
+     * Get the main looper (ui) executor. This executor unconditionally posts a runnable onto the
+     * event queue.
+     * This is not the same behaviour as runOnUiThread
+     */
+    @NonNull
+    protected Executor getMainLooperExecutor() {
+        return mMainLooperExecutor.get();
+    }
 
     /**
      * Get the Dagger component for this object
@@ -62,7 +83,6 @@ public abstract class AbstractInjectedActivity<ComponentT>
 
     // endregion
 
-
     // region Mandatory overrides
 
     /**
@@ -78,5 +98,4 @@ public abstract class AbstractInjectedActivity<ComponentT>
     protected abstract void injectFields(@NonNull ComponentT component);
 
     // endregion
-
 }

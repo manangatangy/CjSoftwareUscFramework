@@ -1,18 +1,18 @@
 package com.cjsoftware.library.platform.android.preservable;
 
 import com.cjsoftware.library.core.ObjectRegistry;
-import com.cjsoftware.library.platform.android.injected.AbstractInjectedFragment;
+import com.cjsoftware.library.platform.android.dagger.BaseDaggerFragment;
 import com.cjsoftware.library.uistatepreservation.StatePreservationManager;
 
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
 
 /**
- * Extends the {@link AbstractInjectedFragment} by adding support for view and field state preservation
+ * Extends the {@link BaseDaggerFragment} by adding support for view and field state preservation
  * using the state preservation framework
  */
-public abstract class AbstractPreservableFragment<ComponentT>
-        extends AbstractInjectedFragment<ComponentT> {
+public abstract class BasePreservableFragment<ComponentT>
+        extends BaseDaggerFragment<ComponentT> {
 
     // region Private Fields
 
