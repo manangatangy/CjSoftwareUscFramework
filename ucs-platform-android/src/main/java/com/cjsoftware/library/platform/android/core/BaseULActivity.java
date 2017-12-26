@@ -11,6 +11,7 @@ import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.view.View;
 
 import java.lang.ref.WeakReference;
@@ -63,6 +64,16 @@ public abstract class BaseULActivity
     @Override
     public void onBackPressed() {
         notifyUserNavigationRequest(UserNavigationRequest.NAVIGATE_BACK);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            notifyUserNavigationRequest(UserNavigationRequest.NAVIGATE_UP_HEIRARCHY);
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
