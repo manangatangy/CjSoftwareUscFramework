@@ -1,6 +1,8 @@
 package com.cjsoftware.library.platform.android.ucs;
 
 
+import android.support.annotation.CallSuper;
+
 import com.cjsoftware.library.core.UserNavigationRequest;
 import com.cjsoftware.library.ucs.BaseUcsContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseScreenNavigationContract;
@@ -18,49 +20,55 @@ import java.lang.ref.WeakReference;
  */
 
 public abstract class BaseCoordinator<UiT extends BaseUiContract,
-    StateManagerT extends BaseStateManagerContract,
-    NavigationT extends BaseScreenNavigationContract>
+        StateManagerT extends BaseStateManagerContract,
+        NavigationT extends BaseScreenNavigationContract>
 
         implements BaseUcsContract.BaseCoordinatorContract,
                    UiBinder<UiT>,
                    ScreenNavigationBinder<NavigationT>,
                    StateManagerAccessor<StateManagerT> {
 
-  private final StateManagerT mStateManager;
+    private final StateManagerT mStateManager;
 
-  private WeakReference<UiT> mUi = new WeakReference<>(null);
-  private WeakReference<NavigationT> mNavigation = new WeakReference<>(null);
+    private WeakReference<UiT> mUi = new WeakReference<>(null);
+    private WeakReference<NavigationT> mNavigation = new WeakReference<>(null);
 
-  public BaseCoordinator(StateManagerT stateManager) {
-    mStateManager = stateManager;
-  }
+    public BaseCoordinator(StateManagerT stateManager) {
+        mStateManager = stateManager;
+    }
 
 
-  @Override
-  public void bindToImplementation(NavigationT realization) {
-    mNavigation = new WeakReference<NavigationT>(realization);
-  }
+    @Override
+    public void bindToImplementation(NavigationT realization) {
+        mNavigation = new WeakReference<NavigationT>(realization);
+    }
 
-  @Override
-  public void bindToImplementation(UiT realization) {
-    mUi = new WeakReference<>(realization);
-  }
+    @Override
+    public void bindToImplementation(UiT realization) {
+        mUi = new WeakReference<>(realization);
+    }
 
-  @Override
-  public StateManagerT getStateManager() {
-    return mStateManager;
-  }
+    @Override
+    public StateManagerT getStateManager() {
+        return mStateManager;
+    }
 
-  protected UiT getUi() {
-    return mUi.get();
-  }
+    protected UiT getUi() {
+        return mUi.get();
+    }
 
-  protected NavigationT getNavigation() {
-    return mNavigation.get();
-  }
+    protected NavigationT getNavigation() {
+        return mNavigation.get();
+    }
 
-  @Override
-  public void onUserNavigationRequest(UserNavigationRequest navigationRequest) {
-  }
+    @CallSuper
+    @Override
+    public void onUserNavigationRequest(UserNavigationRequest navigationRequest) {
+    }
+
+    @CallSuper
+    @Override
+    public void onInitialize() {
+    }
 
 }

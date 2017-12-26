@@ -1,5 +1,9 @@
 package com.cjsoftware.library.platform.android.ucs;
 
+import android.os.Bundle;
+import android.support.annotation.CallSuper;
+import android.support.annotation.NonNull;
+
 import com.cjsoftware.library.core.ObjectRegistry;
 import com.cjsoftware.library.core.UserNavigationRequest;
 import com.cjsoftware.library.core.UserNavigationRequestListener;
@@ -13,20 +17,16 @@ import com.cjsoftware.library.ucs.accessor.StateManagerAccessor;
 import com.cjsoftware.library.ucs.binder.ScreenNavigationBinder;
 import com.cjsoftware.library.ucs.binder.UiBinder;
 
-import android.os.Bundle;
-import android.support.annotation.CallSuper;
-import android.support.annotation.NonNull;
-
 /**
  * @author chris
  * @date 30 Jul 2017
  */
 
 public abstract class BaseUiFragment<UiT extends BaseUiContract,
-                                          CoordinatorT extends BaseCoordinatorContract,
-                                          StateManagerT extends BaseStateManagerContract,
-                                          NavigationT extends BaseScreenNavigationContract,
-                                          ComponentT>
+        CoordinatorT extends BaseCoordinatorContract,
+        StateManagerT extends BaseStateManagerContract,
+        NavigationT extends BaseScreenNavigationContract,
+        ComponentT>
 
         extends BasePreservableFragment<ComponentT>
 
@@ -34,108 +34,110 @@ public abstract class BaseUiFragment<UiT extends BaseUiContract,
                    UserNavigationRequestListener,
                    BaseScreenNavigationContract {
 
-  // region Private fields
-  private static final String STATE_COORDINATOR = "coordinator";
-  private CoordinatorAccessor<CoordinatorT> mContractBroker;
-  // endregion
+    // region Private fields
+    private static final String STATE_COORDINATOR = "coordinator";
+    private CoordinatorAccessor<CoordinatorT> mContractBroker;
+    // endregion
 
 
-  // region Android lifecycle
+    // region Android lifecycle
 
-  @CallSuper
-  @Override
-  public void onSaveInstanceState(Bundle outState) {
-    super.onSaveInstanceState(outState);
+    @CallSuper
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
 
-    ObjectRegistry objectRegistry = getObjectRegistry();
-    outState.putString(STATE_COORDINATOR, objectRegistry.put(mContractBroker));
-  }
-
-  // endregion
-
-
-  // region private helper methods
-
-  private CoordinatorAccessor<CoordinatorT> restoreCoordinator(Bundle savedState) {
-    CoordinatorAccessor<CoordinatorT> coordinator = null;
-
-    ObjectRegistry objectRegistry = getObjectRegistry();
-    String coordinatorKey = savedState.getString(STATE_COORDINATOR);
-
-    if (coordinatorKey != null) {
-      coordinator = objectRegistry.get(coordinatorKey);
+        ObjectRegistry objectRegistry = getObjectRegistry();
+        outState.putString(STATE_COORDINATOR, objectRegistry.put(mContractBroker));
     }
 
-    return coordinator;
-  }
-
-  // endregion
+    // endregion
 
 
-  // region protected helper methods
+    // region private helper methods
 
-  protected CoordinatorT getCoordinator() {
-    return mContractBroker.getCoordinator();
-  }
+    private CoordinatorAccessor<CoordinatorT> restoreCoordinator(Bundle savedState) {
+        CoordinatorAccessor<CoordinatorT> coordinator = null;
 
-  // endregion
+        ObjectRegistry objectRegistry = getObjectRegistry();
+        String coordinatorKey = savedState.getString(STATE_COORDINATOR);
 
-  // region optional overrides
+        if (coordinatorKey != null) {
+            coordinator = objectRegistry.get(coordinatorKey);
+        }
 
-  @Override
-  protected void onInitializeInstance(Bundle savedInstanceState) {
-    super.onInitializeInstance(savedInstanceState);
-
-    if (savedInstanceState == null) {
-
-      mContractBroker = createContractBroker(getComponent());
-      initializeStateManager(((StateManagerAccessor<StateManagerT>) mContractBroker).getStateManager());
-    } else {
-
-      mContractBroker = restoreCoordinator(savedInstanceState);
-
-      if (mContractBroker == null) {
-        mContractBroker = createContractBroker(getComponent());
-        initializeStateManager(((StateManagerAccessor<StateManagerT>) mContractBroker).getStateManager());
-      }
+        return coordinator;
     }
 
-  }
-
-  @Override
-  protected void onBeforeStatePreserve() {
-    super.onBeforeStatePreserve();
-    ((UiBinder<UiT>) mContractBroker).bindToImplementation(null);
-    ((ScreenNavigationBinder<NavigationT>) mContractBroker).bindToImplementation(null);
-  }
+    // endregion
 
 
-  @Override
-  protected void onAfterStateRestored() {
-    super.onAfterStateRestored();
-    ((UiBinder<UiT>) mContractBroker).bindToImplementation((UiT) this);
-    ((ScreenNavigationBinder<NavigationT>) mContractBroker).bindToImplementation((NavigationT) this);
-  }
+    // region protected helper methods
 
-  @Override
-  public void onUserNavigationRequest(UserNavigationRequest navigationRequest) {
-    super.onUserNavigationRequest(navigationRequest);
+    protected CoordinatorT getCoordinator() {
+        return mContractBroker.getCoordinator();
+    }
 
-    getCoordinator().onUserNavigationRequest(navigationRequest);
+    // endregion
 
-  }
+    // region optional overrides
 
-  // endregion
+    @Override
+    protected void onInitializeInstance(Bundle savedInstanceState) {
+        super.onInitializeInstance(savedInstanceState);
+
+        if (savedInstanceState == null) {
+
+            mContractBroker = createContractBroker(getComponent());
+            initializeStateManager(((StateManagerAccessor<StateManagerT>) mContractBroker).getStateManager());
+        } else {
+
+            mContractBroker = restoreCoordinator(savedInstanceState);
+
+            if (mContractBroker == null) {
+                mContractBroker = createContractBroker(getComponent());
+                initializeStateManager(((StateManagerAccessor<StateManagerT>) mContractBroker).getStateManager());
+            }
+        }
+
+        getCoordinator().onInitialize();
+
+    }
+
+    @Override
+    protected void onBeforeStatePreserve() {
+        super.onBeforeStatePreserve();
+        ((UiBinder<UiT>) mContractBroker).bindToImplementation(null);
+        ((ScreenNavigationBinder<NavigationT>) mContractBroker).bindToImplementation(null);
+    }
 
 
-  // region mandatory overrides
+    @Override
+    protected void onAfterStateRestored() {
+        super.onAfterStateRestored();
+        ((UiBinder<UiT>) mContractBroker).bindToImplementation((UiT) this);
+        ((ScreenNavigationBinder<NavigationT>) mContractBroker).bindToImplementation((NavigationT) this);
+    }
 
-  @NonNull
-  protected abstract CoordinatorAccessor<CoordinatorT> createContractBroker(@NonNull ComponentT component);
+    @Override
+    public void onUserNavigationRequest(UserNavigationRequest navigationRequest) {
+        super.onUserNavigationRequest(navigationRequest);
 
-  protected abstract void initializeStateManager(@NonNull StateManagerT stateManager);
+        getCoordinator().onUserNavigationRequest(navigationRequest);
 
-  // endregion
+    }
+
+    // endregion
+
+
+    // region mandatory overrides
+
+    @NonNull
+    protected abstract CoordinatorAccessor<CoordinatorT> createContractBroker(@NonNull ComponentT component);
+
+    protected abstract void initializeStateManager(@NonNull StateManagerT stateManager);
+
+    // endregion
 
 
 }

@@ -97,6 +97,7 @@ public abstract class BaseUiDialogFragment<UiT extends BaseUiContract,
             }
         }
 
+        getCoordinator().onInitialize();
     }
 
     @Override
