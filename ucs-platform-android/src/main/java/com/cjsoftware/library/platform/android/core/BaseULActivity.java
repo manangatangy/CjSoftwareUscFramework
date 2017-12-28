@@ -43,7 +43,7 @@ public abstract class BaseULActivity
     public final void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        onPreconfigure();
+        onPreconfigure(savedInstanceState);
 
         int layoutResource = getLayoutResource();
 
@@ -170,7 +170,7 @@ public abstract class BaseULActivity
      * window options etc
      */
     @CallSuper
-    protected void onPreconfigure() {
+    protected void onPreconfigure(Bundle savedInstanceState) {
     }
 
     /**

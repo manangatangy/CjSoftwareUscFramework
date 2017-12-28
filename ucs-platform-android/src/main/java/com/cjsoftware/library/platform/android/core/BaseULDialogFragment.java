@@ -30,7 +30,7 @@ public abstract class BaseULDialogFragment
     @Override
     public final void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        onPreconfigure();
+        onPreconfigure(savedInstanceState);
     }
 
     /**
@@ -96,7 +96,7 @@ public abstract class BaseULDialogFragment
      * Perform any configuration required before content is set.
      */
     @CallSuper
-    protected void onPreconfigure() {
+    protected void onPreconfigure(Bundle savedInstanceState) {
     }
 
     /**

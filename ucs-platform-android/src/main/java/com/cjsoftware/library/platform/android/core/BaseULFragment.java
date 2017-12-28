@@ -39,7 +39,7 @@ public abstract class BaseULFragment
     @Override
     public final void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        onPreconfigure();
+        onPreconfigure(savedInstanceState);
     }
 
     /**
@@ -148,7 +148,7 @@ public abstract class BaseULFragment
      * Perform any activity configuration required before content is set.
      */
     @CallSuper
-    protected void onPreconfigure() {
+    protected void onPreconfigure(Bundle savedInstanceState) {
     }
 
     /**

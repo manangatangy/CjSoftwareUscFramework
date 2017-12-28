@@ -77,8 +77,8 @@ public abstract class BasePreservableFragment<ComponentT>
 
 
     @Override
-    protected void onInitializeInstance(Bundle savedInstanceState) {
-        super.onInitializeInstance(savedInstanceState);
+    protected void onPreconfigure(Bundle savedInstanceState) {
+        super.onPreconfigure(savedInstanceState);
 
         if (savedInstanceState == null) {
 

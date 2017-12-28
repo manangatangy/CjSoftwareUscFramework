@@ -82,9 +82,10 @@ public abstract class BaseUiFragment<UiT extends BaseUiContract,
 
     // region optional overrides
 
+
     @Override
-    protected void onInitializeInstance(Bundle savedInstanceState) {
-        super.onInitializeInstance(savedInstanceState);
+    protected void onPreconfigure(Bundle savedInstanceState) {
+        super.onPreconfigure(savedInstanceState);
 
         if (savedInstanceState == null) {
 
@@ -99,9 +100,12 @@ public abstract class BaseUiFragment<UiT extends BaseUiContract,
                 initializeStateManager(((StateManagerAccessor<StateManagerT>) mContractBroker).getStateManager());
             }
         }
+    }
 
+    @Override
+    protected void onInitializeInstance(Bundle savedInstanceState) {
+        super.onInitializeInstance(savedInstanceState);
         getCoordinator().onInitialize();
-
     }
 
     @Override

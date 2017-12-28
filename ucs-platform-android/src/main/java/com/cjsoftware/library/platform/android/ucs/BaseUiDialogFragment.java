@@ -77,12 +77,13 @@ public abstract class BaseUiDialogFragment<UiT extends BaseUiContract,
 
     // endregion
 
+
+
     // region optional overrides
 
     @Override
-    protected void onInitializeInstance(Bundle savedInstanceState) {
-        super.onInitializeInstance(savedInstanceState);
-
+    protected void onPreconfigure(Bundle savedInstanceState) {
+        super.onPreconfigure(savedInstanceState);
         if (savedInstanceState == null) {
 
             mContractBroker = createContractBroker(getComponent());
@@ -96,8 +97,13 @@ public abstract class BaseUiDialogFragment<UiT extends BaseUiContract,
                 initializeStateManager(((StateManagerAccessor<StateManagerT>) mContractBroker).getStateManager());
             }
         }
+    }
 
+    @Override
+    protected void onInitializeInstance(Bundle savedInstanceState) {
+        super.onInitializeInstance(savedInstanceState);
         getCoordinator().onInitialize();
+
     }
 
     @Override

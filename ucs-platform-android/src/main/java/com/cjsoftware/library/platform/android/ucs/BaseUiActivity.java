@@ -92,15 +92,10 @@ public abstract class BaseUiActivity<UiT extends BaseUiContract,
 
     // region optional overrides
 
-    /**
-     * Perform any Ui component specific initialization required.
-     *
-     * @Param newInstance - true if this is a new instance
-     */
-    @Override
-    protected void onInitializeInstance(Bundle savedInstanceState) {
-        super.onInitializeInstance(savedInstanceState);
 
+    @Override
+    protected void onPreconfigure(Bundle savedInstanceState) {
+        super.onPreconfigure(savedInstanceState);
         if (savedInstanceState == null) {
 
             mContractBroker = createContractBroker(getComponent());
@@ -115,9 +110,12 @@ public abstract class BaseUiActivity<UiT extends BaseUiContract,
                 initializeStateManager(((StateManagerAccessor<StateManagerT>) mContractBroker).getStateManager());
             }
         }
+    }
 
+    @Override
+    protected void onInitializeInstance(Bundle savedInstanceState) {
+        super.onInitializeInstance(savedInstanceState);
         getCoordinator().onInitialize();
-
     }
 
     @Override

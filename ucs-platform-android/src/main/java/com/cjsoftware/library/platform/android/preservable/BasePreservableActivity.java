@@ -75,9 +75,8 @@ public abstract class BasePreservableActivity<ComponentT>
     // region optional overrides
 
     @Override
-    protected void onInitializeInstance(Bundle savedInstanceState) {
-        super.onInitializeInstance(savedInstanceState);
-
+    protected void onPreconfigure(Bundle savedInstanceState) {
+        super.onPreconfigure(savedInstanceState);
         if (savedInstanceState == null) {
             mStatePreservationManager = createStatePreservationManager();
         } else {
@@ -86,7 +85,6 @@ public abstract class BasePreservableActivity<ComponentT>
                 mStatePreservationManager = createStatePreservationManager();
             }
         }
-
     }
 
     /**

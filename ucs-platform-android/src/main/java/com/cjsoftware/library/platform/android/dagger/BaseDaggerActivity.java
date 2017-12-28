@@ -3,6 +3,7 @@ package com.cjsoftware.library.platform.android.dagger;
 import com.cjsoftware.library.core.ObjectRegistry;
 import com.cjsoftware.library.platform.android.core.BaseULActivity;
 
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import javax.inject.Inject;
@@ -25,11 +26,11 @@ public abstract class BaseDaggerActivity<ComponentT>
     /**
      * Obtains the Dagger component from {@link #createComponent()}
      * Calls {@link #injectFields(Object), passing it the Dagger Component}
-     * See {@link BaseULActivity#onPreconfigure()}
+     * See {@link BaseULActivity#onPreconfigure(Bundle)}}
      */
     @Override
-    protected void onPreconfigure() {
-        super.onPreconfigure();
+    protected void onPreconfigure(Bundle savedInstanceState) {
+        super.onPreconfigure(savedInstanceState);
 
         mComponent = createComponent();
         CreateComponentInterceptor createComponentInterceptor = InjectionInstrumentation.getInstance().getCreateComponentInterceptor();
