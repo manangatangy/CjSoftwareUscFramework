@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import com.cjsoftware.library.core.ObjectRegistry;
 import com.cjsoftware.library.platform.android.core.BaseULActivity;
 import com.cjsoftware.library.platform.android.core.BaseULDialogFragment;
+import com.cjsoftware.library.platform.android.core.facility.MainLooper;
 import com.cjsoftware.library.platform.android.core.facility.MainLooperExecutor;
 
 import java.util.concurrent.Executor;
@@ -25,7 +26,7 @@ public abstract class BaseDaggerDialogFragment<ComponentT>
     Lazy<ObjectRegistry> mObjectRegistry;
 
     @Inject
-    @Named(MainLooperExecutor.INJECTOR_NAME)
+    @MainLooper
     Lazy<Executor> mMainLooperExecutor;
 
     private ComponentT mComponent;

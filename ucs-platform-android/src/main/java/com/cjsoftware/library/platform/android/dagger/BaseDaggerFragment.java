@@ -3,6 +3,7 @@ package com.cjsoftware.library.platform.android.dagger;
 import com.cjsoftware.library.core.ObjectRegistry;
 import com.cjsoftware.library.platform.android.core.BaseULActivity;
 import com.cjsoftware.library.platform.android.core.BaseULFragment;
+import com.cjsoftware.library.platform.android.core.facility.MainLooper;
 import com.cjsoftware.library.platform.android.core.facility.MainLooperExecutor;
 
 import android.os.Bundle;
@@ -25,7 +26,7 @@ public abstract class BaseDaggerFragment<ComponentT>
     Lazy<ObjectRegistry> mObjectRegistry;
 
     @Inject
-    @Named(MainLooperExecutor.INJECTOR_NAME)
+    @MainLooper
     Lazy<Executor> mMainLooperExecutor;
 
     private ComponentT mComponent;
