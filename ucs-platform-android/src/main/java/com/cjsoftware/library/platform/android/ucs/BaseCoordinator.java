@@ -1,16 +1,13 @@
 package com.cjsoftware.library.platform.android.ucs;
 
 
-import android.support.annotation.CallSuper;
-
 import com.cjsoftware.library.core.UserNavigationRequest;
-import com.cjsoftware.library.ucs.BaseUcsContract;
+import com.cjsoftware.library.ucs.BaseUcsContract.BaseCoordinatorContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseScreenNavigationContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseStateManagerContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseUiContract;
-import com.cjsoftware.library.ucs.accessor.StateManagerAccessor;
-import com.cjsoftware.library.ucs.binder.ScreenNavigationBinder;
-import com.cjsoftware.library.ucs.binder.UiBinder;
+
+import android.support.annotation.CallSuper;
 
 import java.lang.ref.WeakReference;
 
@@ -19,14 +16,11 @@ import java.lang.ref.WeakReference;
  * @date 30 Jul 2017
  */
 
-public abstract class BaseCoordinator<UiT extends BaseUiContract,
+public abstract class BaseCoordinator<UiT extends BaseUiContract<StateManagerT>,
         StateManagerT extends BaseStateManagerContract,
         NavigationT extends BaseScreenNavigationContract>
 
-        implements BaseUcsContract.BaseCoordinatorContract,
-                   UiBinder<UiT>,
-                   ScreenNavigationBinder<NavigationT>,
-                   StateManagerAccessor<StateManagerT> {
+        implements BaseCoordinatorContract<UiT, NavigationT, StateManagerT> {
 
     private final StateManagerT mStateManager;
 
@@ -39,17 +33,17 @@ public abstract class BaseCoordinator<UiT extends BaseUiContract,
 
 
     @Override
-    public void bindToImplementation(NavigationT realization) {
-        mNavigation = new WeakReference<NavigationT>(realization);
+    public void bindUi(UiT ui) {
+        mUi = new WeakReference<>(ui);
     }
 
     @Override
-    public void bindToImplementation(UiT realization) {
-        mUi = new WeakReference<>(realization);
+    public void bindScreenNavigation(NavigationT screenNavigation) {
+        mNavigation = new WeakReference<>(screenNavigation);
     }
 
-    @Override
-    public StateManagerT getStateManager() {
+
+    protected StateManagerT getStateManager() {
         return mStateManager;
     }
 
@@ -69,6 +63,11 @@ public abstract class BaseCoordinator<UiT extends BaseUiContract,
     @CallSuper
     @Override
     public void onInitialize() {
+    }
+
+    @CallSuper
+    @Override
+    public void onUpdate() {
     }
 
 }

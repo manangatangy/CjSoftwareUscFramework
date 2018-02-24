@@ -4,10 +4,7 @@ import com.cjsoftware.library.ucs.BaseUcsContract.BaseCoordinatorContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseScreenNavigationContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseStateManagerContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseUiContract;
-import com.cjsoftware.library.ucs.accessor.CoordinatorAccessor;
-import com.cjsoftware.library.ucs.accessor.StateManagerAccessor;
-import com.cjsoftware.library.ucs.binder.ScreenNavigationBinder;
-import com.cjsoftware.library.ucs.binder.UiBinder;
+import com.cjsoftware.library.ucs.ContractBroker;
 import com.cjsoftware.processor.ucs.builder.ProxyQueueBuilder;
 import com.cjsoftware.processor.ucs.model.ProcessorModel;
 import com.squareup.javapoet.AnnotationSpec;
@@ -41,11 +38,20 @@ import javax.lang.model.type.TypeMirror;
 public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeElement> {
 
     private static final String GENERATED_CONTRACT_BROKER_CLASS_NAME_TEMPLATE = "%1s_ContractBroker";
+
     private static final String COORDINATOR_PARAM_NAME = "coordinator";
     private static final String COORDINATOR_FIELD_NAME = "mCoordinator";
+
     private static final String COORDINATOR_PROXY_QUEUE_FIELD_NAME = "mCoordinatorQueue";
+
+    private static final String STATEMANAGER_PARAM_NAME = "stateManager";
+    private static final String STATEMANAGER_FIELD_NAME = "mStateManager";
+
+
     private static final String USER_NAVIGATION_REQUEST_PROXY_QUEUE_FIELD_NAME = "mUserNavigationRequestQueue";
+
     private static final String UI_PROXY_QUEUE_FIELD_NAME = "mUiProxyQueue";
+
     private static final String SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME = "mScreenNavigationQueue";
 
     public UcsContractProcessor(ProcessingEnvironment processingEnvironment, ProcessorModel model) {
@@ -85,16 +91,22 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
 
         TypeElement stateManagerContract = findDescendentOf(contractSpec, BaseStateManagerContract.class);
 
+
         TypeSpec.Builder contractBrokerClass = TypeSpec.classBuilder(generatedContractBrokerClassName)
                 .addModifiers(Modifier.PUBLIC)
-                .addSuperinterface(ParameterizedTypeName.get(ClassName.get(UiBinder.class), ClassName.get(uiContract)))
-                .addSuperinterface(ParameterizedTypeName.get(ClassName.get(ScreenNavigationBinder.class), ClassName.get(screenNavigationContract)))
-                .addSuperinterface(ParameterizedTypeName.get(ClassName.get(CoordinatorAccessor.class), ClassName.get(coordinatorContract)))
-                .addSuperinterface(ParameterizedTypeName.get(ClassName.get(StateManagerAccessor.class), ClassName.get(stateManagerContract)));
+                .addSuperinterface(
+                        ParameterizedTypeName.get(ClassName.get(ContractBroker.class),
+                                ClassName.get(uiContract),
+                                ClassName.get(coordinatorContract),
+                                ClassName.get(screenNavigationContract),
+                                ClassName.get(stateManagerContract)));
 
         contractBrokerClass.addField(TypeName.get(coordinatorContract.asType()), COORDINATOR_FIELD_NAME, Modifier.PRIVATE);
+        contractBrokerClass.addField(TypeName.get(coordinatorContract.asType()), STATEMANAGER_FIELD_NAME, Modifier.PRIVATE);
+
         contractBrokerClass.addField(coordinatorProxyQueueClass, COORDINATOR_PROXY_QUEUE_FIELD_NAME, Modifier.PRIVATE);
         contractBrokerClass.addField(uiProxyQueueClass, UI_PROXY_QUEUE_FIELD_NAME, Modifier.PRIVATE);
+
         contractBrokerClass.addField(screenNavigationProxyQueueClass, SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME, Modifier.PRIVATE);
 
         contractBrokerClass.addMethod(
@@ -103,36 +115,39 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
                         .addModifiers(Modifier.PUBLIC)
 
                         .addParameter(ParameterSpec.builder(ClassName.get(Executor.class), "uiExecutor")
-                                .addAnnotation(AnnotationSpec.builder(ClassName.get("javax.inject", "Named"))
-                                        .addMember("value", "$S", "uiExecutor")
+                                .addAnnotation(AnnotationSpec.builder(ClassName.get("com.cjsoftware.library.platform.android.core.facility", "MainLooper"))
                                         .build())
                                 .build())
+
                         .addParameter(ClassName.get(Executor.class), "backgroundExecutor")
                         .addParameter(TypeName.get(coordinatorContract.asType()), COORDINATOR_PARAM_NAME)
+                        .addParameter(TypeName.get(stateManagerContract.asType()), STATEMANAGER_PARAM_NAME)
 
+                        // Save reference to coordinator (strong)
                         .addStatement("this.$N = $N", COORDINATOR_FIELD_NAME, COORDINATOR_PARAM_NAME)
 
-                        .addStatement("this.$N = new $T($N)", UI_PROXY_QUEUE_FIELD_NAME, uiProxyQueueClass, "uiExecutor")
+                        // Save reference to state manager (strong)
+                        .addStatement("this.$N = $N", STATEMANAGER_FIELD_NAME, STATEMANAGER_PARAM_NAME)
 
-                        .addStatement("this.$N = new $T($N)", SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME, screenNavigationProxyQueueClass, "uiExecutor")
-
+                        // Create Coordinator proxy (ui -> coordinator) - run on background thread
                         .addStatement("$N = new $T($N)", COORDINATOR_PROXY_QUEUE_FIELD_NAME, coordinatorProxyQueueClass, "backgroundExecutor")
                         .addStatement("$N.setProxiedInterface($N)", COORDINATOR_PROXY_QUEUE_FIELD_NAME, COORDINATOR_PARAM_NAME)
 
-                        .addStatement(
-                                "(($T<$T>) this.$N).bindToImplementation($N)",
-                                UiBinder.class, uiContract, COORDINATOR_FIELD_NAME, UI_PROXY_QUEUE_FIELD_NAME)
+                        // Create Ui proxy (coordinator -> ui) - run on ui thread
+                        .addStatement("this.$N = new $T($N)", UI_PROXY_QUEUE_FIELD_NAME, uiProxyQueueClass, "uiExecutor")
 
-                        .addStatement(
-                                "(($T<$T>) this.$N).bindToImplementation($N)",
-                                ScreenNavigationBinder.class, screenNavigationContract,
-                                COORDINATOR_FIELD_NAME, SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME)
+                        // Create Screen navigation proxy (coordinator -> screen navigation)  - run on ui thread
+                        .addStatement("this.$N = new $T($N)", SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME, screenNavigationProxyQueueClass, "uiExecutor")
+
+                        // Bind proxies to coordinator
+                        .addStatement("this.$N.bindUi($N)", COORDINATOR_FIELD_NAME, UI_PROXY_QUEUE_FIELD_NAME)
+                        .addStatement("this.$N.bindScreenNavigation($N)", COORDINATOR_FIELD_NAME, SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME)
 
                         .build());
 
 
         contractBrokerClass.addMethod(
-                MethodSpec.methodBuilder("bindToImplementation")
+                MethodSpec.methodBuilder("bindUi")
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class)
                         .addParameter(ParameterSpec.builder(TypeName.get(uiContract.asType()), "ui").build())
@@ -141,7 +156,7 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
         );
 
         contractBrokerClass.addMethod(
-                MethodSpec.methodBuilder("bindToImplementation")
+                MethodSpec.methodBuilder("bindScreenNavigation")
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class)
                         .addParameter(ParameterSpec.builder(TypeName.get(screenNavigationContract.asType()), "navigation").build())
@@ -165,9 +180,7 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
                         .addAnnotation(processorModel.getNonNullAnnotationClassName())
                         .addModifiers(Modifier.PUBLIC)
                         .returns(TypeName.get(stateManagerContract.asType()))
-                        .addStatement("return (($T)this.$N).getStateManager()",
-                                ParameterizedTypeName.get(ClassName.get(StateManagerAccessor.class), ClassName.get(stateManagerContract.asType())),
-                                COORDINATOR_FIELD_NAME)
+                        .addStatement("return this.$N", STATEMANAGER_FIELD_NAME)
                         .build()
         );
 

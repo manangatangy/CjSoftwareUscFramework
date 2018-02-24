@@ -1,9 +1,5 @@
 package com.cjsoftware.library.platform.android.ucs;
 
-import android.os.Bundle;
-import android.support.annotation.CallSuper;
-import android.support.annotation.NonNull;
-
 import com.cjsoftware.library.core.ObjectRegistry;
 import com.cjsoftware.library.core.UserNavigationRequest;
 import com.cjsoftware.library.core.UserNavigationRequestListener;
@@ -12,31 +8,32 @@ import com.cjsoftware.library.ucs.BaseUcsContract.BaseCoordinatorContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseScreenNavigationContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseStateManagerContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseUiContract;
-import com.cjsoftware.library.ucs.accessor.CoordinatorAccessor;
-import com.cjsoftware.library.ucs.accessor.StateManagerAccessor;
-import com.cjsoftware.library.ucs.binder.ScreenNavigationBinder;
-import com.cjsoftware.library.ucs.binder.UiBinder;
+import com.cjsoftware.library.ucs.ContractBroker;
+
+import android.os.Bundle;
+import android.support.annotation.CallSuper;
+import android.support.annotation.NonNull;
 
 /**
  * @author chris
- * @date 30 Jul 2017
+ *         30 Jul 2017
  */
 
-public abstract class BaseUiFragment<UiT extends BaseUiContract,
-        CoordinatorT extends BaseCoordinatorContract,
+public abstract class BaseUiFragment<UiT extends BaseUiContract<StateManagerT>,
+        CoordinatorT extends BaseCoordinatorContract<UiT, NavigationT, StateManagerT>,
         StateManagerT extends BaseStateManagerContract,
         NavigationT extends BaseScreenNavigationContract,
         ComponentT>
 
         extends BasePreservableFragment<ComponentT>
 
-        implements BaseUiContract,
-                   UserNavigationRequestListener,
-                   BaseScreenNavigationContract {
+        implements BaseUiContract<StateManagerT>,
+        UserNavigationRequestListener,
+        BaseScreenNavigationContract {
 
     // region Private fields
-    private static final String STATE_COORDINATOR = "coordinator";
-    private CoordinatorAccessor<CoordinatorT> mContractBroker;
+    private static final String STATE_CONTRACT_BROKER = "contractbroker";
+    private ContractBroker<UiT, CoordinatorT, NavigationT, StateManagerT> mContractBroker;
     // endregion
 
 
@@ -48,7 +45,7 @@ public abstract class BaseUiFragment<UiT extends BaseUiContract,
         super.onSaveInstanceState(outState);
 
         ObjectRegistry objectRegistry = getObjectRegistry();
-        outState.putString(STATE_COORDINATOR, objectRegistry.put(mContractBroker));
+        outState.putString(STATE_CONTRACT_BROKER, objectRegistry.put(mContractBroker));
     }
 
     // endregion
@@ -56,11 +53,11 @@ public abstract class BaseUiFragment<UiT extends BaseUiContract,
 
     // region private helper methods
 
-    private CoordinatorAccessor<CoordinatorT> restoreCoordinator(Bundle savedState) {
-        CoordinatorAccessor<CoordinatorT> coordinator = null;
+    private ContractBroker<UiT, CoordinatorT, NavigationT, StateManagerT> restoreCoordinator(Bundle savedState) {
+        ContractBroker<UiT, CoordinatorT, NavigationT, StateManagerT> coordinator = null;
 
         ObjectRegistry objectRegistry = getObjectRegistry();
-        String coordinatorKey = savedState.getString(STATE_COORDINATOR);
+        String coordinatorKey = savedState.getString(STATE_CONTRACT_BROKER);
 
         if (coordinatorKey != null) {
             coordinator = objectRegistry.get(coordinatorKey);
@@ -90,14 +87,16 @@ public abstract class BaseUiFragment<UiT extends BaseUiContract,
         if (savedInstanceState == null) {
 
             mContractBroker = createContractBroker(getComponent());
-            initializeStateManager(((StateManagerAccessor<StateManagerT>) mContractBroker).getStateManager());
+            initializeStateManager(mContractBroker.getStateManager());
         } else {
 
             mContractBroker = restoreCoordinator(savedInstanceState);
 
             if (mContractBroker == null) {
                 mContractBroker = createContractBroker(getComponent());
-                initializeStateManager(((StateManagerAccessor<StateManagerT>) mContractBroker).getStateManager());
+                initializeStateManager(mContractBroker.getStateManager());
+            } else {
+                updateStateManager(mContractBroker.getStateManager());
             }
         }
     }
@@ -111,16 +110,16 @@ public abstract class BaseUiFragment<UiT extends BaseUiContract,
     @Override
     protected void onBeforeStatePreserve() {
         super.onBeforeStatePreserve();
-        ((UiBinder<UiT>) mContractBroker).bindToImplementation(null);
-        ((ScreenNavigationBinder<NavigationT>) mContractBroker).bindToImplementation(null);
+        mContractBroker.bindScreenNavigation(null);
+        mContractBroker.bindUi(null);
     }
 
 
     @Override
     protected void onAfterStateRestored() {
         super.onAfterStateRestored();
-        ((UiBinder<UiT>) mContractBroker).bindToImplementation((UiT) this);
-        ((ScreenNavigationBinder<NavigationT>) mContractBroker).bindToImplementation((NavigationT) this);
+        mContractBroker.bindUi(this);
+        mContractBroker.bindScreenNavigation(this);
     }
 
     @Override
@@ -131,14 +130,31 @@ public abstract class BaseUiFragment<UiT extends BaseUiContract,
 
     }
 
+    /**
+     * Perform any updates required in the state manager when a Ucs Stack has resumed from
+     * interruption.
+     */
+    @CallSuper
+    protected void updateStateManager(@NonNull StateManagerT stateManager) {
+    }
+
     // endregion
 
 
     // region mandatory overrides
 
+    /**
+     * Obtain an instance of the contract broker. The contract broker implementation is generated by
+     * the Ucs annotation
+     * processor from the UcsContract interface.
+     */
     @NonNull
-    protected abstract CoordinatorAccessor<CoordinatorT> createContractBroker(@NonNull ComponentT component);
+    protected abstract ContractBroker<UiT, CoordinatorT, NavigationT, StateManagerT> createContractBroker(@NonNull ComponentT component);
 
+    /**
+     * Set the state manager to a fresh new instance state. This happens once when the Ucs stack is
+     * first initialized.
+     */
     protected abstract void initializeStateManager(@NonNull StateManagerT stateManager);
 
     // endregion

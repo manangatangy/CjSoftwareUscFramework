@@ -12,14 +12,38 @@ public interface BaseUcsContract {
   interface BaseScreenNavigationContract {
   }
 
-  interface BaseUiContract {
+  interface BaseUiContract<StateManagerT extends BaseStateManagerContract> {
   }
 
-  interface BaseCoordinatorContract extends UserNavigationRequestListener {
-    void onInitialize();
+  interface BaseCoordinatorContract<UiT extends BaseUiContract, ScreenNavigationT extends BaseScreenNavigationContract, StateManagerT extends BaseStateManagerContract>
+          extends UserNavigationRequestListener {
+
+      // region "Physical" Architecture methods. Plumbing to realise the logical Architecture
+
+      /**
+       * Bind ui to implementation.
+       */
+      void bindUi(UiT ui);
+
+      /**
+       * Bind screenNavigation to implementation.
+       */
+      void bindScreenNavigation(ScreenNavigationT screenNavigation);
+
+      // endregion
+
+      /**
+       * Called once at construction of Ucs Stack (new instance).
+       */
+      void onInitialize();
+
+      /**
+       * Called when Ucs Stack was interrupted then resumed (onResume in Android speak)
+       */
+      void onUpdate();
+
   }
 
   interface BaseStateManagerContract {
   }
-
 }
