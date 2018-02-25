@@ -104,7 +104,13 @@ public abstract class BaseUiFragment<UiT extends BaseUiContract<StateManagerT>,
     @Override
     protected void onInitializeInstance(Bundle savedInstanceState) {
         super.onInitializeInstance(savedInstanceState);
-        getCoordinator().onInitialize();
+
+        if (savedInstanceState == null) {
+            getCoordinator().onInitialize();
+        } else {
+            getCoordinator().onUpdate();
+        }
+
     }
 
     @Override

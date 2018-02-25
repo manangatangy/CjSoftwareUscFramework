@@ -100,7 +100,12 @@ public abstract class BaseUiDialogFragment<UiT extends BaseUiContract<StateManag
     @Override
     protected void onInitializeInstance(Bundle savedInstanceState) {
         super.onInitializeInstance(savedInstanceState);
-        getCoordinator().onInitialize();
+
+        if (savedInstanceState == null) {
+            getCoordinator().onInitialize();
+        } else {
+            getCoordinator().onUpdate();
+        }
 
     }
 
