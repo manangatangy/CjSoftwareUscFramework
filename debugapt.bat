@@ -1,0 +1,1 @@
+gradlew.bat  -Dorg.gradle.debug=true -Dorg.gradle.daemon=false :ucs-testapp:clean :ucs-testapp:compileDebugJavaWithJavac -Dagentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005

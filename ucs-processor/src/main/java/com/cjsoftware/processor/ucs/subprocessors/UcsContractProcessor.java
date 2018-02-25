@@ -1,5 +1,6 @@
 package com.cjsoftware.processor.ucs.subprocessors;
 
+import com.cjsoftware.library.ucs.BaseUcsContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseCoordinatorContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseScreenNavigationContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseStateManagerContract;
@@ -15,6 +16,7 @@ import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.TypeVariableName;
 
 import java.io.IOException;
 import java.util.List;
@@ -29,6 +31,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 
 /**
  * @author chris
@@ -77,17 +80,25 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
 
 
         TypeElement uiContract = findDescendentOf(contractSpec, BaseUiContract.class);
-        ProxyQueueBuilder uiProxyQueueBuilder = new ProxyQueueBuilder(processingEnvironment, processorModel, qualifiedPackageName, false, true);
-        ClassName uiProxyQueueClass = uiProxyQueueBuilder.buildClass(uiContract);
+        ClassName uiProxyQueueClass = null;
+        if (uiContract != null) {
+            ProxyQueueBuilder uiProxyQueueBuilder = new ProxyQueueBuilder(processingEnvironment, processorModel, qualifiedPackageName, false, true);
+            uiProxyQueueClass = uiProxyQueueBuilder.buildClass(uiContract);
+        }
 
         TypeElement coordinatorContract = findDescendentOf(contractSpec, BaseCoordinatorContract.class);
-        ProxyQueueBuilder coordinatorProxyQueueBuilder = new ProxyQueueBuilder(processingEnvironment, processorModel, qualifiedPackageName, true, true);
-        ClassName coordinatorProxyQueueClass = coordinatorProxyQueueBuilder.buildClass(coordinatorContract);
+        ClassName coordinatorProxyQueueClass = null;
+        if (coordinatorContract != null) {
+            ProxyQueueBuilder coordinatorProxyQueueBuilder = new ProxyQueueBuilder(processingEnvironment, processorModel, qualifiedPackageName,  true, true);
+            coordinatorProxyQueueClass = coordinatorProxyQueueBuilder.buildClass(coordinatorContract);
+        }
 
         TypeElement screenNavigationContract = findDescendentOf(contractSpec, BaseScreenNavigationContract.class);
-        ProxyQueueBuilder screenNavigationProxyQueueBuilder = new ProxyQueueBuilder(processingEnvironment, processorModel, qualifiedPackageName, false, true);
-        ClassName screenNavigationProxyQueueClass = screenNavigationProxyQueueBuilder.buildClass(screenNavigationContract);
-
+        ClassName screenNavigationProxyQueueClass = null;
+        if (screenNavigationContract != null) {
+            ProxyQueueBuilder screenNavigationProxyQueueBuilder = new ProxyQueueBuilder(processingEnvironment, processorModel, qualifiedPackageName, false, true);
+            screenNavigationProxyQueueClass = screenNavigationProxyQueueBuilder.buildClass(screenNavigationContract);
+        }
 
         TypeElement stateManagerContract = findDescendentOf(contractSpec, BaseStateManagerContract.class);
 
@@ -102,7 +113,7 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
                                 ClassName.get(stateManagerContract)));
 
         contractBrokerClass.addField(TypeName.get(coordinatorContract.asType()), COORDINATOR_FIELD_NAME, Modifier.PRIVATE);
-        contractBrokerClass.addField(TypeName.get(coordinatorContract.asType()), STATEMANAGER_FIELD_NAME, Modifier.PRIVATE);
+        contractBrokerClass.addField(TypeName.get(stateManagerContract.asType()), STATEMANAGER_FIELD_NAME, Modifier.PRIVATE);
 
         contractBrokerClass.addField(coordinatorProxyQueueClass, COORDINATOR_PROXY_QUEUE_FIELD_NAME, Modifier.PRIVATE);
         contractBrokerClass.addField(uiProxyQueueClass, UI_PROXY_QUEUE_FIELD_NAME, Modifier.PRIVATE);
@@ -141,26 +152,34 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
 
                         // Bind proxies to coordinator
                         .addStatement("this.$N.bindUi($N)", COORDINATOR_FIELD_NAME, UI_PROXY_QUEUE_FIELD_NAME)
-                        .addStatement("this.$N.bindScreenNavigation($N)", COORDINATOR_FIELD_NAME, SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME)
+                        .addStatement("this.$N.bindScreenNavigation(($T)$N)", COORDINATOR_FIELD_NAME, screenNavigationContract, SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME)
 
                         .build());
 
+
+        TypeVariableName uiImplementT = TypeVariableName.get("UiImplementT")
+                .withBounds(TypeName.get(BaseUcsContract.BaseUiContract.class));
 
         contractBrokerClass.addMethod(
                 MethodSpec.methodBuilder("bindUi")
                         .addModifiers(Modifier.PUBLIC)
                         .addAnnotation(Override.class)
-                        .addParameter(ParameterSpec.builder(TypeName.get(uiContract.asType()), "ui").build())
-                        .addStatement("this.$N.setProxiedInterface($N)", UI_PROXY_QUEUE_FIELD_NAME, "ui")
+                        .addTypeVariable(uiImplementT)
+                        .addParameter(ParameterSpec.builder(uiImplementT, "ui").build())
+                        .addStatement("this.$N.setProxiedInterface(($T)$N)", UI_PROXY_QUEUE_FIELD_NAME, uiContract, "ui")
                         .build()
         );
+
+        TypeVariableName navigationImplementT = TypeVariableName.get("NavigationImplementT")
+                .withBounds(TypeName.get(BaseUcsContract.BaseScreenNavigationContract.class));
 
         contractBrokerClass.addMethod(
                 MethodSpec.methodBuilder("bindScreenNavigation")
                         .addModifiers(Modifier.PUBLIC)
+                        .addTypeVariable(navigationImplementT)
                         .addAnnotation(Override.class)
-                        .addParameter(ParameterSpec.builder(TypeName.get(screenNavigationContract.asType()), "navigation").build())
-                        .addStatement("this.$N.setProxiedInterface($N)", SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME, "navigation")
+                        .addParameter(ParameterSpec.builder(navigationImplementT, "navigation").build())
+                        .addStatement("this.$N.setProxiedInterface(($T)$N)", SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME, screenNavigationContract, "navigation")
                         .build()
         );
 
@@ -184,6 +203,25 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
                         .build()
         );
 
+        contractBrokerClass.addMethod(
+                MethodSpec.methodBuilder("getUi")
+                        .addAnnotation(Override.class)
+                        .addAnnotation(processorModel.getNonNullAnnotationClassName())
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(TypeName.get(uiContract.asType()))
+                        .addStatement("return this.$N", UI_PROXY_QUEUE_FIELD_NAME)
+                        .build()
+        );
+
+        contractBrokerClass.addMethod(
+                MethodSpec.methodBuilder("getScreenNavigation")
+                        .addAnnotation(Override.class)
+                        .addAnnotation(processorModel.getNonNullAnnotationClassName())
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(TypeName.get(screenNavigationContract.asType()))
+                        .addStatement("return this.$N", SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME)
+                        .build()
+        );
 
         try {
             JavaFile javaFile = JavaFile.builder(packageElement.getQualifiedName().toString(), contractBrokerClass.build())
@@ -202,6 +240,7 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
     private TypeElement findDescendentOf(TypeElement enclosingElement, Class<?> ancestorClass) {
 
         TypeElement foundDescendent = findDescendentInEnclosed(enclosingElement, ancestorClass);
+
 
         if (foundDescendent == null) {
             // Didn't find in this interface, start searching for it up the heirarchy
@@ -241,10 +280,17 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
     private boolean ancestryContains(Class<?> ancestor, TypeElement element) {
 
         List<? extends TypeMirror> interfaceList = element.getInterfaces();
+        ClassName ancestorTypeName = ClassName.get(ancestor);
 
         for (TypeMirror typeMirror : interfaceList) {
             if (typeMirror.getKind() == TypeKind.DECLARED) {
-                if (TypeName.get(ancestor).equals(TypeName.get(typeMirror))) {
+
+                TypeName mirrorName = TypeName.get(typeMirror);
+                if (mirrorName instanceof ParameterizedTypeName) {
+                    mirrorName = ((ParameterizedTypeName)mirrorName).rawType;
+                }
+
+                if (ancestorTypeName.equals(mirrorName)) {
                     return true;
                 } else {
                     DeclaredType declaredType = (DeclaredType) typeMirror;
