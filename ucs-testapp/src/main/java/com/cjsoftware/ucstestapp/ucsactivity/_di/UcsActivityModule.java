@@ -6,6 +6,8 @@ import com.cjsoftware.ucstestapp.ucsactivity.UcsActivityContract.ScreenNavigatio
 import com.cjsoftware.ucstestapp.ucsactivity.UcsActivityContract.StateManager;
 import com.cjsoftware.ucstestapp.ucsactivity.UcsActivityContract.Ui;
 import com.cjsoftware.ucstestapp.ucsactivity.UcsActivityContract_ContractBroker;
+import com.cjsoftware.ucstestapp.ucsactivity.impl.UcsActivityCoordinator;
+import com.cjsoftware.ucstestapp.ucsactivity.impl.UcsActivityStateManager;
 
 import dagger.Module;
 import dagger.Provides;
@@ -19,5 +21,15 @@ public class UcsActivityModule {
     @Provides
     ContractBroker<Ui, Coordinator, ScreenNavigation, StateManager> provideContractBroker(UcsActivityContract_ContractBroker contract_contractBroker) {
         return contract_contractBroker;
+    }
+
+    @Provides
+    Coordinator provideCoordinator(UcsActivityCoordinator coordinator) {
+        return coordinator;
+    }
+
+    @Provides
+    StateManager provideStateManager(UcsActivityStateManager stateManager) {
+        return stateManager;
     }
 }
