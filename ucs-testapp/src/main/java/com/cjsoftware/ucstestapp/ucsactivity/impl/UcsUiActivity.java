@@ -2,7 +2,9 @@ package com.cjsoftware.ucstestapp.ucsactivity.impl;
 
 import com.cjsoftware.library.platform.android.ucs.BaseUiActivity;
 import com.cjsoftware.library.ucs.ContractBroker;
+import com.cjsoftware.library.uistatepreservation.Preserve;
 import com.cjsoftware.library.uistatepreservation.StatePreservationManager;
+import com.cjsoftware.ucstestapp.R;
 import com.cjsoftware.ucstestapp.application.Application;
 import com.cjsoftware.ucstestapp.ucsactivity.UcsActivityContract.Coordinator;
 import com.cjsoftware.ucstestapp.ucsactivity.UcsActivityContract.ScreenNavigation;
@@ -13,7 +15,11 @@ import com.cjsoftware.ucstestapp.ucsactivity._di.UcsActivityComponent;
 import com.cjsoftware.ucstestapp.ucsactivity._di.UcsActivityModule;
 
 import android.support.annotation.NonNull;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 
 /**
  * Created by chris on 2/25/2018.
@@ -21,6 +27,29 @@ import android.view.View;
 
 public class UcsUiActivity extends BaseUiActivity<Ui, Coordinator, StateManager, ScreenNavigation, UcsActivityComponent>
         implements Ui, ScreenNavigation {
+
+    @Preserve
+    EditText mEditText;
+
+    @Preserve
+    Button mButton;
+
+    private TextWatcher mTextWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            getCoordinator().onUserChangedText(s.toString());
+        }
+    };
 
     @NonNull
     @Override
@@ -38,7 +67,7 @@ public class UcsUiActivity extends BaseUiActivity<Ui, Coordinator, StateManager,
 
     @Override
     protected StatePreservationManager createStatePreservationManager() {
-        return null;
+        return new UcsUiActivity_StatePreservationManager();
     }
 
     @NonNull
@@ -54,11 +83,47 @@ public class UcsUiActivity extends BaseUiActivity<Ui, Coordinator, StateManager,
 
     @Override
     protected int getLayoutResource() {
-        return 0;
+        return R.layout.activity_ucs_activity;
     }
 
     @Override
     protected void onBindViews(View layoutRoot) {
+        mButton = findViewById(R.id.ucsActivity_Button);
+        mEditText = findViewById(R.id.ucsActivity_editText);
+    }
 
+    @Override
+    protected void onAfterStateRestored() {
+        super.onAfterStateRestored();
+        mEditText.addTextChangedListener(mTextWatcher);
+        mButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getCoordinator().onUserPressedButton();
+            }
+        });
+    }
+
+    @Override
+    protected void onBeforeStatePreserve() {
+        super.onBeforeStatePreserve();
+        mEditText.removeTextChangedListener(mTextWatcher);
+    }
+
+    @Override
+    public void requestExit() {
+        finish();
+    }
+
+    @Override
+    public void setButtonEnable(boolean enable) {
+        mButton.setEnabled(enable);
+    }
+
+    @Override
+    public void setTextContent(String text) {
+        mEditText.removeTextChangedListener(mTextWatcher);
+        mEditText.setText(text);
+        mEditText.addTextChangedListener(mTextWatcher);
     }
 }

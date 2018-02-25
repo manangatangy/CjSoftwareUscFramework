@@ -10,15 +10,19 @@ import com.cjsoftware.library.ucs.UcsContract;
 @UcsContract
 public interface UcsActivityContract extends BaseUcsContract {
     interface ScreenNavigation extends BaseScreenNavigationContract {
-
+        void requestExit();
     }
 
     interface Ui extends BaseUiContract<StateManager> {
+        void setButtonEnable(boolean enable);
 
+        void setTextContent(String text);
     }
 
     interface Coordinator extends BaseCoordinatorContract<Ui, ScreenNavigation, StateManager> {
+        void onUserPressedButton();
 
+        void onUserChangedText(String newText);
     }
 
     interface StateManager extends BaseStateManagerContract {
