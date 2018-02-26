@@ -82,13 +82,13 @@ public abstract class BasePreservableFragment<ComponentT>
 
         if (savedInstanceState == null) {
 
-            mStatePreservationManager = createStatePreservationHandler();
+            mStatePreservationManager = createStatePreservationManager();
 
         } else {
 
             mStatePreservationManager = restoreViewStateManager(savedInstanceState);
             if (mStatePreservationManager == null) {
-                mStatePreservationManager = createStatePreservationHandler();
+                mStatePreservationManager = createStatePreservationManager();
             }
 
         }
@@ -123,7 +123,7 @@ public abstract class BasePreservableFragment<ComponentT>
      * Get the state preservation manager. The manager is generated from @Preserve annotations on
      * fields.
      */
-    protected abstract StatePreservationManager createStatePreservationHandler();
+    protected abstract StatePreservationManager createStatePreservationManager();
 
     // endregion
 
