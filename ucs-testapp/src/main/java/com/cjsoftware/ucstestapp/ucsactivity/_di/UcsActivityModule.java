@@ -19,17 +19,17 @@ import dagger.Provides;
 public class UcsActivityModule {
 
     @Provides
-    ContractBroker<Ui, Coordinator, ScreenNavigation, StateManager> provideContractBroker(UcsActivityContract_ContractBroker contract_contractBroker) {
+    public ContractBroker<Ui, Coordinator, ScreenNavigation, StateManager> provideContractBroker(UcsActivityContract_ContractBroker contract_contractBroker) {
         return contract_contractBroker;
     }
 
     @Provides
-    Coordinator provideCoordinator(UcsActivityCoordinator coordinator) {
+    public Coordinator provideCoordinator(UcsActivityCoordinator coordinator) {
         return coordinator;
     }
 
     @Provides
-    StateManager provideStateManager(UcsActivityStateManager stateManager) {
+    public StateManager provideStateManager(UcsActivityStateManager stateManager) {
         return stateManager;
     }
 }
