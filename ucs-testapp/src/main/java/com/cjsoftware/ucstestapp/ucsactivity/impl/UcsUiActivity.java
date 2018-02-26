@@ -93,8 +93,8 @@ public class UcsUiActivity extends BaseUiActivity<Ui, Coordinator, StateManager,
     }
 
     @Override
-    protected void onAfterStateRestored() {
-        super.onAfterStateRestored();
+    protected void onAttachViewListeners() {
+        super.onAttachViewListeners();
         mEditText.addTextChangedListener(mTextWatcher);
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,11 +102,12 @@ public class UcsUiActivity extends BaseUiActivity<Ui, Coordinator, StateManager,
                 getCoordinator().onUserPressedButton();
             }
         });
+
     }
 
     @Override
-    protected void onBeforeStatePreserve() {
-        super.onBeforeStatePreserve();
+    protected void onDetachViewListeners() {
+        super.onDetachViewListeners();
         mEditText.removeTextChangedListener(mTextWatcher);
     }
 
