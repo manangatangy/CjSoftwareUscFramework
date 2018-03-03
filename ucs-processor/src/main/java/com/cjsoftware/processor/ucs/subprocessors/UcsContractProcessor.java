@@ -158,6 +158,9 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
                         .addStatement("(($T)this.$N).bindUi($N)", CoordinatorBinder.class, COORDINATOR_FIELD_NAME, UI_PROXY_QUEUE_FIELD_NAME)
                         .addStatement("(($T)this.$N).bindScreenNavigation(($T)$N)", CoordinatorBinder.class, COORDINATOR_FIELD_NAME, screenNavigationContract, SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME)
 
+                        // Bind statemanager to coordinator
+                        .addStatement("(($T)this.$N).bindStateManager($N)", CoordinatorBinder.class, COORDINATOR_FIELD_NAME, STATEMANAGER_FIELD_NAME)
+
                         // Create CoordinatorBindingProxy
                         .addStatement("this.$N = new $N()", PROXY_BINDER_FIELD_NAME, coordinatorBinderProxy.name)
 
