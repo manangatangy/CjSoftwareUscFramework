@@ -1,11 +1,11 @@
 package com.cjsoftware.processor.ucs.subprocessors;
 
-import com.cjsoftware.library.ucs.BaseUcsContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseCoordinatorContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseScreenNavigationContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseStateManagerContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseUiContract;
 import com.cjsoftware.library.ucs.ContractBroker;
+import com.cjsoftware.library.ucs.CoordinatorBinder;
 import com.cjsoftware.processor.ucs.builder.ProxyQueueBuilder;
 import com.cjsoftware.processor.ucs.model.ProcessorModel;
 import com.squareup.javapoet.AnnotationSpec;
@@ -19,19 +19,20 @@ import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.Executor;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 
 /**
  * @author chris
@@ -42,6 +43,7 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
 
     private static final String GENERATED_CONTRACT_BROKER_CLASS_NAME_TEMPLATE = "%1s_ContractBroker";
 
+    private static final String PROXY_BINDER_FIELD_NAME = "mProxyCoordinatorBinder";
     private static final String COORDINATOR_PARAM_NAME = "coordinator";
     private static final String COORDINATOR_FIELD_NAME = "mCoordinator";
 
@@ -49,9 +51,6 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
 
     private static final String STATEMANAGER_PARAM_NAME = "stateManager";
     private static final String STATEMANAGER_FIELD_NAME = "mStateManager";
-
-
-    private static final String USER_NAVIGATION_REQUEST_PROXY_QUEUE_FIELD_NAME = "mUserNavigationRequestQueue";
 
     private static final String UI_PROXY_QUEUE_FIELD_NAME = "mUiProxyQueue";
 
@@ -89,7 +88,7 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
         TypeElement coordinatorContract = findDescendentOf(contractSpec, BaseCoordinatorContract.class);
         ClassName coordinatorProxyQueueClass = null;
         if (coordinatorContract != null) {
-            ProxyQueueBuilder coordinatorProxyQueueBuilder = new ProxyQueueBuilder(processingEnvironment, processorModel, qualifiedPackageName,  true, true);
+            ProxyQueueBuilder coordinatorProxyQueueBuilder = new ProxyQueueBuilder(processingEnvironment, processorModel, qualifiedPackageName, true, true);
             coordinatorProxyQueueClass = coordinatorProxyQueueBuilder.buildClass(coordinatorContract);
         }
 
@@ -103,15 +102,17 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
         TypeElement stateManagerContract = findDescendentOf(contractSpec, BaseStateManagerContract.class);
 
 
+        ParameterizedTypeName contractBrokerSuperInterface = ParameterizedTypeName.get(ClassName.get(ContractBroker.class),
+                ClassName.get(uiContract),
+                ClassName.get(screenNavigationContract),
+                ClassName.get(coordinatorContract),
+                ClassName.get(stateManagerContract));
+
         TypeSpec.Builder contractBrokerClass = TypeSpec.classBuilder(generatedContractBrokerClassName)
                 .addModifiers(Modifier.PUBLIC)
-                .addSuperinterface(
-                        ParameterizedTypeName.get(ClassName.get(ContractBroker.class),
-                                ClassName.get(uiContract),
-                                ClassName.get(coordinatorContract),
-                                ClassName.get(screenNavigationContract),
-                                ClassName.get(stateManagerContract)));
+                .addSuperinterface(contractBrokerSuperInterface);
 
+        contractBrokerClass.addField(TypeName.get(CoordinatorBinder.class), PROXY_BINDER_FIELD_NAME, Modifier.PRIVATE);
         contractBrokerClass.addField(TypeName.get(coordinatorContract.asType()), COORDINATOR_FIELD_NAME, Modifier.PRIVATE);
         contractBrokerClass.addField(TypeName.get(stateManagerContract.asType()), STATEMANAGER_FIELD_NAME, Modifier.PRIVATE);
 
@@ -119,6 +120,9 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
         contractBrokerClass.addField(uiProxyQueueClass, UI_PROXY_QUEUE_FIELD_NAME, Modifier.PRIVATE);
 
         contractBrokerClass.addField(screenNavigationProxyQueueClass, SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME, Modifier.PRIVATE);
+
+        TypeSpec coordinatorBinderProxy = buildBindingProxyClass(uiContract, screenNavigationContract, stateManagerContract);
+        contractBrokerClass.addType(coordinatorBinderProxy);
 
         contractBrokerClass.addMethod(
                 MethodSpec.constructorBuilder()
@@ -151,37 +155,24 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
                         .addStatement("this.$N = new $T($N)", SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME, screenNavigationProxyQueueClass, "uiExecutor")
 
                         // Bind proxies to coordinator
-                        .addStatement("this.$N.bindUi($N)", COORDINATOR_FIELD_NAME, UI_PROXY_QUEUE_FIELD_NAME)
-                        .addStatement("this.$N.bindScreenNavigation(($T)$N)", COORDINATOR_FIELD_NAME, screenNavigationContract, SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME)
+                        .addStatement("(($T)this.$N).bindUi($N)", CoordinatorBinder.class, COORDINATOR_FIELD_NAME, UI_PROXY_QUEUE_FIELD_NAME)
+                        .addStatement("(($T)this.$N).bindScreenNavigation(($T)$N)", CoordinatorBinder.class, COORDINATOR_FIELD_NAME, screenNavigationContract, SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME)
+
+                        // Create CoordinatorBindingProxy
+                        .addStatement("this.$N = new $N()", PROXY_BINDER_FIELD_NAME, coordinatorBinderProxy.name)
 
                         .build());
 
-
-        TypeVariableName uiImplementT = TypeVariableName.get("UiImplementT")
-                .withBounds(TypeName.get(BaseUcsContract.BaseUiContract.class));
-
         contractBrokerClass.addMethod(
-                MethodSpec.methodBuilder("bindUi")
-                        .addModifiers(Modifier.PUBLIC)
+                MethodSpec.methodBuilder("getCoordinatorBinder")
                         .addAnnotation(Override.class)
-                        .addTypeVariable(uiImplementT)
-                        .addParameter(ParameterSpec.builder(uiImplementT, "ui").build())
-                        .addStatement("this.$N.setProxiedInterface(($T)$N)", UI_PROXY_QUEUE_FIELD_NAME, uiContract, "ui")
+                        .addAnnotation(processorModel.getNonNullAnnotationClassName())
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(TypeName.get(CoordinatorBinder.class))
+                        .addStatement("return $N", PROXY_BINDER_FIELD_NAME)
                         .build()
         );
 
-        TypeVariableName navigationImplementT = TypeVariableName.get("NavigationImplementT")
-                .withBounds(TypeName.get(BaseUcsContract.BaseScreenNavigationContract.class));
-
-        contractBrokerClass.addMethod(
-                MethodSpec.methodBuilder("bindScreenNavigation")
-                        .addModifiers(Modifier.PUBLIC)
-                        .addTypeVariable(navigationImplementT)
-                        .addAnnotation(Override.class)
-                        .addParameter(ParameterSpec.builder(navigationImplementT, "navigation").build())
-                        .addStatement("this.$N.setProxiedInterface(($T)$N)", SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME, screenNavigationContract, "navigation")
-                        .build()
-        );
 
         contractBrokerClass.addMethod(
                 MethodSpec.methodBuilder("getCoordinator")
@@ -190,16 +181,6 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
                         .addModifiers(Modifier.PUBLIC)
                         .returns(TypeName.get(coordinatorContract.asType()))
                         .addStatement("return $N", COORDINATOR_PROXY_QUEUE_FIELD_NAME)
-                        .build()
-        );
-
-        contractBrokerClass.addMethod(
-                MethodSpec.methodBuilder("getStateManager")
-                        .addAnnotation(Override.class)
-                        .addAnnotation(processorModel.getNonNullAnnotationClassName())
-                        .addModifiers(Modifier.PUBLIC)
-                        .returns(TypeName.get(stateManagerContract.asType()))
-                        .addStatement("return this.$N", STATEMANAGER_FIELD_NAME)
                         .build()
         );
 
@@ -223,6 +204,17 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
                         .build()
         );
 
+        contractBrokerClass.addMethod(
+                MethodSpec.methodBuilder("getStateManager")
+                        .addAnnotation(Override.class)
+                        .addAnnotation(processorModel.getNonNullAnnotationClassName())
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(TypeName.get(stateManagerContract.asType()))
+                        .addStatement("return this.$N", STATEMANAGER_FIELD_NAME)
+                        .build()
+        );
+
+
         try {
             JavaFile javaFile = JavaFile.builder(packageElement.getQualifiedName().toString(), contractBrokerClass.build())
                     .addFileComment("Generated Code, do not modify.")
@@ -236,6 +228,48 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
         }
 
     }
+
+    private TypeSpec buildBindingProxyClass(TypeElement uiContract, TypeElement screenNavigationContract, TypeElement stateManagerContract) {
+
+
+        TypeSpec.Builder bindingProxyClass = TypeSpec.classBuilder("ProxyCoordinatorBinder")
+                .addSuperinterface(CoordinatorBinder.class);
+
+
+        TypeVariableName uiImplementationT = TypeVariableName.get("UiImplementationT").withBounds(BaseUiContract.class);
+
+        bindingProxyClass.addMethod(MethodSpec.methodBuilder("bindUi")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .addTypeVariable(uiImplementationT)
+                .addParameter(uiImplementationT, "ui")
+                .addStatement("$N.setProxiedInterface(($T)ui)", UI_PROXY_QUEUE_FIELD_NAME, uiContract)
+                .build());
+
+        TypeVariableName screenNavigationT = TypeVariableName.get("ScreenNavigationT").withBounds(BaseScreenNavigationContract.class);
+
+        bindingProxyClass.addMethod(MethodSpec.methodBuilder("bindScreenNavigation")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .addTypeVariable(screenNavigationT)
+                .addParameter(screenNavigationT, "screenNavigation")
+                .addStatement("$N.setProxiedInterface(($T)screenNavigation)", SCREEN_NAVIGATION_PROXY_QUEUE_FIELD_NAME, screenNavigationContract)
+                .build());
+
+        TypeVariableName stateManagerT = TypeVariableName.get("StateManagerT").withBounds(BaseStateManagerContract.class);
+
+        bindingProxyClass.addMethod(MethodSpec.methodBuilder("bindStateManager")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .addTypeVariable(stateManagerT)
+                .addParameter(stateManagerT, "stateManager")
+                .addStatement("(($T)$N).bindStateManager(($T) stateManager)", CoordinatorBinder.class, COORDINATOR_FIELD_NAME, stateManagerContract)
+                .build());
+
+        return bindingProxyClass.build();
+    }
+
+
 
     private TypeElement findDescendentOf(TypeElement enclosingElement, Class<?> ancestorClass) {
 
@@ -287,7 +321,7 @@ public class UcsContractProcessor extends AbstractUcsElementSetProcessor<TypeEle
 
                 TypeName mirrorName = TypeName.get(typeMirror);
                 if (mirrorName instanceof ParameterizedTypeName) {
-                    mirrorName = ((ParameterizedTypeName)mirrorName).rawType;
+                    mirrorName = ((ParameterizedTypeName) mirrorName).rawType;
                 }
 
                 if (ancestorTypeName.equals(mirrorName)) {

@@ -17,20 +17,20 @@ import android.support.annotation.NonNull;
  * @date 30 Jul 2017
  */
 
-public abstract class BaseUiDialogFragment<UiT extends BaseUiContract<StateManagerT>,
-        CoordinatorT extends BaseCoordinatorContract<UiT, NavigationT, StateManagerT>,
-        StateManagerT extends BaseStateManagerContract,
+public abstract class BaseUiDialogFragment<UiT extends BaseUiContract,
         NavigationT extends BaseScreenNavigationContract,
+        CoordinatorT extends BaseCoordinatorContract,
+        StateManagerT extends BaseStateManagerContract,
         ComponentT>
 
         extends BasePreservableDialogFragment<ComponentT>
 
-        implements BaseUiContract<StateManagerT>,
+        implements BaseUiContract,
         BaseScreenNavigationContract {
 
     // region Private fields
     private static final String STATE_CONTRACT_BROKER = "contractbroker";
-    private ContractBroker<UiT, CoordinatorT, NavigationT, StateManagerT> mContractBroker;
+    private ContractBroker<UiT, NavigationT, CoordinatorT, StateManagerT> mContractBroker;
     // endregion
 
 
@@ -50,8 +50,8 @@ public abstract class BaseUiDialogFragment<UiT extends BaseUiContract<StateManag
 
     // region private helper methods
 
-    private ContractBroker<UiT, CoordinatorT, NavigationT, StateManagerT> restoreCoordinator(Bundle savedState) {
-        ContractBroker<UiT, CoordinatorT, NavigationT, StateManagerT> contractBroker = null;
+    private ContractBroker<UiT, NavigationT, CoordinatorT, StateManagerT> restoreContractBroker(Bundle savedState) {
+        ContractBroker<UiT, NavigationT, CoordinatorT, StateManagerT> contractBroker = null;
 
         ObjectRegistry objectRegistry = getObjectRegistry();
         String coordinatorKey = savedState.getString(STATE_CONTRACT_BROKER);
@@ -86,7 +86,7 @@ public abstract class BaseUiDialogFragment<UiT extends BaseUiContract<StateManag
             initializeStateManager(mContractBroker.getStateManager());
         } else {
 
-            mContractBroker = restoreCoordinator(savedInstanceState);
+            mContractBroker = restoreContractBroker(savedInstanceState);
 
             if (mContractBroker == null) {
                 mContractBroker = createContractBroker(getComponent());
@@ -113,8 +113,8 @@ public abstract class BaseUiDialogFragment<UiT extends BaseUiContract<StateManag
     protected void onBeforeStatePreserve() {
         super.onBeforeStatePreserve();
 
-        mContractBroker.bindScreenNavigation(null);
-        mContractBroker.bindUi(null);
+        mContractBroker.getCoordinatorBinder().bindScreenNavigation(null);
+        mContractBroker.getCoordinatorBinder().bindUi(null);
     }
 
 
@@ -122,8 +122,8 @@ public abstract class BaseUiDialogFragment<UiT extends BaseUiContract<StateManag
     protected void onAfterStateRestored() {
         super.onAfterStateRestored();
 
-        mContractBroker.bindScreenNavigation(this);
-        mContractBroker.bindUi(this);
+        mContractBroker.getCoordinatorBinder().bindScreenNavigation(this);
+        mContractBroker.getCoordinatorBinder().bindUi(this);
     }
 
     /**
@@ -144,7 +144,7 @@ public abstract class BaseUiDialogFragment<UiT extends BaseUiContract<StateManag
      * processor from the UcsContract interface.
      */
     @NonNull
-    protected abstract ContractBroker<UiT, CoordinatorT, NavigationT, StateManagerT> createContractBroker(@NonNull ComponentT component);
+    protected abstract ContractBroker<UiT, NavigationT, CoordinatorT, StateManagerT> createContractBroker(@NonNull ComponentT component);
 
     /**
      * Set the state manager to a fresh new instance state. This happens once when the Ucs stack is

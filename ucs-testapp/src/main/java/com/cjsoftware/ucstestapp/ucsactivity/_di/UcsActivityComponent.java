@@ -23,5 +23,5 @@ public interface UcsActivityComponent {
 
     void inject(UcsUiActivity ucsUiActivity);
 
-    ContractBroker<Ui, Coordinator, ScreenNavigation, StateManager> provideContractBroker();
+    ContractBroker<Ui, ScreenNavigation, Coordinator, StateManager> provideContractBroker();
 }

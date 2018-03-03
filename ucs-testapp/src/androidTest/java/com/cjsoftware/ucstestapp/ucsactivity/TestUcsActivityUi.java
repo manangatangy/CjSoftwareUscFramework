@@ -1,10 +1,9 @@
 package com.cjsoftware.ucstestapp.ucsactivity;
 
-import com.cjsoftware.library.platform.android.core.helper.Runnable1Param;
 import com.cjsoftware.library.platform.android.dagger.CreateComponentInterceptor;
 import com.cjsoftware.library.platform.android.dagger.InjectionInstrumentation;
 import com.cjsoftware.library.ucs.ContractBroker;
-import com.cjsoftware.library.ucs.test.FakeContractBroker;
+import com.cjsoftware.ucs_library_test.ucs.FakeContractBroker;
 import com.cjsoftware.ucstestapp.R;
 import com.cjsoftware.ucstestapp.application.Application;
 import com.cjsoftware.ucstestapp.ucsactivity.UcsActivityContract.Coordinator;
@@ -61,7 +60,7 @@ public class TestUcsActivityUi implements CreateComponentInterceptor {
     class MockModule extends UcsActivityModule {
 
         @Override
-        public ContractBroker<Ui, Coordinator, ScreenNavigation, StateManager> provideContractBroker(UcsActivityContract_ContractBroker contract_contractBroker) {
+        public ContractBroker<Ui, ScreenNavigation, Coordinator, StateManager> provideContractBroker(UcsActivityContract_ContractBroker contract_contractBroker) {
             return mFakeContractBroker;
         }
     }
@@ -75,7 +74,8 @@ public class TestUcsActivityUi implements CreateComponentInterceptor {
         mMockCoordinator = mock(Coordinator.class);
         mMockStateManager = mock(StateManager.class);
 
-        mFakeContractBroker = new FakeContractBroker<>(mMockCoordinator, mMockStateManager);
+        mFakeContractBroker = new FakeContractBroker<>(mMockCoordinator);
+        mFakeContractBroker.getCoordinatorBinder().bindStateManager(mMockStateManager);
 
         Intent startIntent = new Intent(mInstrumentation.getTargetContext(), UcsUiActivity.class);
         mActivityRule.launchActivity(startIntent);

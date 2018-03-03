@@ -13,12 +13,12 @@ import javax.inject.Inject;
  * Created by chris on 2/25/2018.
  */
 
-public class UcsActivityCoordinator extends BaseCoordinator<Ui, StateManager, ScreenNavigation>
+public class UcsActivityCoordinator extends BaseCoordinator<Ui, ScreenNavigation, StateManager>
         implements UcsActivityContract.Coordinator {
 
     @Inject
-    public UcsActivityCoordinator(StateManager stateManager) {
-        super(stateManager);
+    public UcsActivityCoordinator() {
+        super();
     }
 
     @Override
@@ -26,7 +26,7 @@ public class UcsActivityCoordinator extends BaseCoordinator<Ui, StateManager, Sc
         super.onUserNavigationRequest(navigationRequest);
 
         if (navigationRequest == UserNavigationRequest.NAVIGATE_BACK) {
-            getNavigation().requestExit();
+            getScreenNavigation().requestExit();
         }
     }
 
@@ -45,6 +45,6 @@ public class UcsActivityCoordinator extends BaseCoordinator<Ui, StateManager, Sc
 
     @Override
     public void onUserChangedText(String newText) {
-        getUi().setButtonEnable(newText.trim().length()>0);
+        getUi().setButtonEnable(newText.trim().length() > 0);
     }
 }

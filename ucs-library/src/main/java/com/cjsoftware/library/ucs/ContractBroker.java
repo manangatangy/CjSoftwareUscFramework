@@ -9,16 +9,10 @@ import com.cjsoftware.library.ucs.BaseUcsContract.BaseStateManagerContract;
  * Created by chris on 2/24/2018.
  */
 
-public interface ContractBroker<UiT extends BaseUiContract<StateManagerT>,
-        CoordinatorT extends BaseCoordinatorContract<UiT, ScreenNavigationT, StateManagerT>,
+public interface ContractBroker<UiT extends BaseUiContract,
         ScreenNavigationT extends BaseScreenNavigationContract,
+        CoordinatorT extends BaseCoordinatorContract,
         StateManagerT extends BaseStateManagerContract> {
-
-
-    <UiImplementT extends BaseUiContract> void  bindUi(UiImplementT ui);
-
-    <NavigationImplementT extends BaseScreenNavigationContract> void bindScreenNavigation(NavigationImplementT screenNavigation);
-
 
     UiT getUi();
 
@@ -27,4 +21,6 @@ public interface ContractBroker<UiT extends BaseUiContract<StateManagerT>,
     CoordinatorT getCoordinator();
 
     StateManagerT getStateManager();
+
+    CoordinatorBinder getCoordinatorBinder();
 }

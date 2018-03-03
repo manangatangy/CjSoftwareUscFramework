@@ -9,41 +9,26 @@ import com.cjsoftware.library.core.UserNavigationRequestListener;
 
 public interface BaseUcsContract {
 
-  interface BaseScreenNavigationContract {
-  }
+    interface BaseScreenNavigationContract {
+    }
 
-  interface BaseUiContract<StateManagerT extends BaseStateManagerContract> {
-  }
+    interface BaseUiContract {
+    }
 
-  interface BaseCoordinatorContract<UiT extends BaseUiContract, ScreenNavigationT extends BaseScreenNavigationContract, StateManagerT extends BaseStateManagerContract>
-          extends UserNavigationRequestListener {
+    interface BaseCoordinatorContract extends UserNavigationRequestListener {
 
-      // region "Physical" Architecture methods. Plumbing to realise the logical Architecture
+        /**
+         * Called once at construction of Ucs Stack (new instance).
+         */
+        void onInitialize();
 
-      /**
-       * Bind ui to implementation.
-       */
-      void bindUi(UiT ui);
+        /**
+         * Called when Ucs Stack was interrupted then resumed (onResume in Android speak)
+         */
+        void onUpdate();
 
-      /**
-       * Bind screenNavigation to implementation.
-       */
-      void bindScreenNavigation(ScreenNavigationT screenNavigation);
+    }
 
-      // endregion
-
-      /**
-       * Called once at construction of Ucs Stack (new instance).
-       */
-      void onInitialize();
-
-      /**
-       * Called when Ucs Stack was interrupted then resumed (onResume in Android speak)
-       */
-      void onUpdate();
-
-  }
-
-  interface BaseStateManagerContract {
-  }
+    interface BaseStateManagerContract {
+    }
 }

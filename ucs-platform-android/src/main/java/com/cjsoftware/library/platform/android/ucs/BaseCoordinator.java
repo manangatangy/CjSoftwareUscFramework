@@ -6,42 +6,34 @@ import com.cjsoftware.library.ucs.BaseUcsContract.BaseCoordinatorContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseScreenNavigationContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseStateManagerContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseUiContract;
+import com.cjsoftware.library.ucs.CoordinatorBinder;
 
 import android.support.annotation.CallSuper;
 
 import java.lang.ref.WeakReference;
+
+import javax.inject.Inject;
 
 /**
  * @author chris
  * @date 30 Jul 2017
  */
 
-public abstract class BaseCoordinator<UiT extends BaseUiContract<StateManagerT>,
-        StateManagerT extends BaseStateManagerContract,
-        NavigationT extends BaseScreenNavigationContract>
+public abstract class BaseCoordinator<UiT extends BaseUiContract,
+        ScreenNavigationT extends BaseScreenNavigationContract,
+        StateManagerT extends BaseStateManagerContract>
 
-        implements BaseCoordinatorContract<UiT, NavigationT, StateManagerT> {
+        implements BaseCoordinatorContract,
+        CoordinatorBinder {
 
-    private final StateManagerT mStateManager;
+    private StateManagerT mStateManager;
 
     private WeakReference<UiT> mUi = new WeakReference<>(null);
-    private WeakReference<NavigationT> mNavigation = new WeakReference<>(null);
+    private WeakReference<ScreenNavigationT> mScreenNavigation = new WeakReference<>(null);
 
-    public BaseCoordinator(StateManagerT stateManager) {
-        mStateManager = stateManager;
+    @Inject
+    public BaseCoordinator() {
     }
-
-
-    @Override
-    public void bindUi(UiT ui) {
-        mUi = new WeakReference<>(ui);
-    }
-
-    @Override
-    public void bindScreenNavigation(NavigationT screenNavigation) {
-        mNavigation = new WeakReference<>(screenNavigation);
-    }
-
 
     protected StateManagerT getStateManager() {
         return mStateManager;
@@ -51,8 +43,23 @@ public abstract class BaseCoordinator<UiT extends BaseUiContract<StateManagerT>,
         return mUi.get();
     }
 
-    protected NavigationT getNavigation() {
-        return mNavigation.get();
+    protected ScreenNavigationT getScreenNavigation() {
+        return mScreenNavigation.get();
+    }
+
+    @Override
+    public <UiImpltementationT extends BaseUiContract> void bindUi(UiImpltementationT ui) {
+        mUi = new WeakReference<>((UiT) ui);
+    }
+
+    @Override
+    public <ScreenNavigationImplementationT extends BaseScreenNavigationContract> void bindScreenNavigation(ScreenNavigationImplementationT screenNavigation) {
+        mScreenNavigation = new WeakReference<>((ScreenNavigationT) screenNavigation);
+    }
+
+    @Override
+    public <StateManagerImplementationT extends BaseStateManagerContract> void bindStateManager(StateManagerImplementationT stateManager) {
+        mStateManager = (StateManagerT) stateManager;
     }
 
     @CallSuper

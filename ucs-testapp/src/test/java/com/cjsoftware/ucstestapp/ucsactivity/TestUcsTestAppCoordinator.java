@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.cjsoftware.library.core.UserNavigationRequest;
+import com.cjsoftware.library.ucs.CoordinatorBinder;
 import com.cjsoftware.ucstestapp.ucsactivity.UcsActivityContract.Ui;
 import com.cjsoftware.ucstestapp.ucsactivity.UcsActivityContract.Coordinator;
 import com.cjsoftware.ucstestapp.ucsactivity.UcsActivityContract.ScreenNavigation;
@@ -34,9 +35,11 @@ public class TestUcsTestAppCoordinator {
         mMockScreenNavigation = mock(ScreenNavigation.class);
         mMockStatemanager = mock(StateManager.class);
 
-        mCoordinator = new UcsActivityCoordinator(mMockStatemanager);
-        mCoordinator.bindUi(mMockUi);
-        mCoordinator.bindScreenNavigation(mMockScreenNavigation);
+        mCoordinator = new UcsActivityCoordinator();
+
+        ((CoordinatorBinder) mCoordinator).bindUi(mMockUi);
+        ((CoordinatorBinder) mCoordinator).bindScreenNavigation(mMockScreenNavigation);
+        ((CoordinatorBinder) mCoordinator).bindStateManager(mMockStatemanager);
 
     }
 

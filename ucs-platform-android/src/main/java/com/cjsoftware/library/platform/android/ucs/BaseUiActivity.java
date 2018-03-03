@@ -9,6 +9,7 @@ import com.cjsoftware.library.ucs.BaseUcsContract.BaseScreenNavigationContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseStateManagerContract;
 import com.cjsoftware.library.ucs.BaseUcsContract.BaseUiContract;
 import com.cjsoftware.library.ucs.ContractBroker;
+import com.cjsoftware.library.ucs.CoordinatorBinder;
 
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
@@ -20,22 +21,22 @@ import android.support.annotation.NonNull;
  * AbstractUiActivity adds Ucs (Ui, Coordinator, Statemanager - MVP by any other
  * name) to PreservableActivity
  */
-public abstract class BaseUiActivity<UiT extends BaseUiContract<StateManagerT>,
-        CoordinatorT extends BaseCoordinatorContract<UiT, NavigationT, StateManagerT>,
-        StateManagerT extends BaseStateManagerContract,
+public abstract class BaseUiActivity<UiT extends BaseUiContract,
         NavigationT extends BaseScreenNavigationContract,
+        CoordinatorT extends BaseCoordinatorContract,
+        StateManagerT extends BaseStateManagerContract,
         ComponentT>
 
         extends BasePreservableActivity<ComponentT>
 
-        implements BaseUiContract<StateManagerT>,
+        implements BaseUiContract,
         BaseScreenNavigationContract {
 
 
     // region Private fields
 
     private static final String STATE_CONTRACT_BROKER = "contractbroker";
-    private ContractBroker<UiT, CoordinatorT, NavigationT, StateManagerT> mContractBroker;
+    private ContractBroker<UiT, NavigationT, CoordinatorT, StateManagerT> mContractBroker;
 
     // In UCS, the navigation requests are always sent to the coordinator. The coordinator then decides what to do,
     // even if that means passing it to a hosted fragment (via the Ui)
@@ -63,8 +64,8 @@ public abstract class BaseUiActivity<UiT extends BaseUiContract<StateManagerT>,
     // region private helper methods
 
 
-    private ContractBroker<UiT, CoordinatorT, NavigationT, StateManagerT> restoreCoordinator(Bundle savedState) {
-        ContractBroker<UiT, CoordinatorT, NavigationT, StateManagerT> contractBroker = null;
+    private ContractBroker<UiT, NavigationT, CoordinatorT, StateManagerT> restoreContractBroker(Bundle savedState) {
+        ContractBroker<UiT,  NavigationT, CoordinatorT, StateManagerT> contractBroker = null;
 
         ObjectRegistry objectRegistry = getObjectRegistry();
         String coordinatorKey = savedState.getString(STATE_CONTRACT_BROKER);
@@ -101,7 +102,7 @@ public abstract class BaseUiActivity<UiT extends BaseUiContract<StateManagerT>,
 
         } else {
 
-            mContractBroker = restoreCoordinator(savedInstanceState);
+            mContractBroker = restoreContractBroker(savedInstanceState);
 
             if (mContractBroker == null) {
                 mContractBroker = createContractBroker(getComponent());
@@ -127,8 +128,8 @@ public abstract class BaseUiActivity<UiT extends BaseUiContract<StateManagerT>,
     protected void onBeforeStatePreserve() {
         super.onBeforeStatePreserve();
         setUserNavigationRequestListener(null);
-        mContractBroker.bindScreenNavigation(null);
-        mContractBroker.bindUi(null);
+        mContractBroker.getCoordinatorBinder().bindUi(null);
+        mContractBroker.getCoordinatorBinder().bindScreenNavigation(null);
     }
 
 
@@ -136,8 +137,9 @@ public abstract class BaseUiActivity<UiT extends BaseUiContract<StateManagerT>,
     protected void onAfterStateRestored() {
         super.onAfterStateRestored();
 
-        mContractBroker.bindScreenNavigation(this);
-        mContractBroker.bindUi(this);
+        CoordinatorBinder coordinatorBinder = mContractBroker.getCoordinatorBinder();
+        coordinatorBinder.bindUi(this);
+        coordinatorBinder.bindScreenNavigation(this);
 
         setUserNavigationRequestListener(mUserNavigationRequestListener);
     }
@@ -161,7 +163,7 @@ public abstract class BaseUiActivity<UiT extends BaseUiContract<StateManagerT>,
      * processor from the UcsContract interface.
      */
     @NonNull
-    protected abstract ContractBroker<UiT, CoordinatorT, NavigationT, StateManagerT> createContractBroker(@NonNull ComponentT component);
+    protected abstract ContractBroker<UiT, NavigationT, CoordinatorT, StateManagerT> createContractBroker(@NonNull ComponentT component);
 
     /**
      * Set the state manager to a fresh new instance state. This happens once when the Ucs stack is

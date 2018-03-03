@@ -1,5 +1,6 @@
 package com.cjsoftware.library.platform.android.core;
 
+import com.cjsoftware.library.core.ObjectRegistry;
 import com.cjsoftware.library.core.UserNavigationRequest;
 import com.cjsoftware.library.core.UserNavigationRequestListener;
 import com.cjsoftware.library.core.UserNavigationRequestProvider;

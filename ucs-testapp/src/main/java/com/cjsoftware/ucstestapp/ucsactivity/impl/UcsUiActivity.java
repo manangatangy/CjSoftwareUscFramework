@@ -6,6 +6,7 @@ import com.cjsoftware.library.uistatepreservation.Preserve;
 import com.cjsoftware.library.uistatepreservation.StatePreservationManager;
 import com.cjsoftware.ucstestapp.R;
 import com.cjsoftware.ucstestapp.application.Application;
+import com.cjsoftware.ucstestapp.ucsactivity.UcsActivityContract;
 import com.cjsoftware.ucstestapp.ucsactivity.UcsActivityContract.Coordinator;
 import com.cjsoftware.ucstestapp.ucsactivity.UcsActivityContract.ScreenNavigation;
 import com.cjsoftware.ucstestapp.ucsactivity.UcsActivityContract.StateManager;
@@ -25,7 +26,7 @@ import android.widget.EditText;
  * Created by chris on 2/25/2018.
  */
 
-public class UcsUiActivity extends BaseUiActivity<Ui, Coordinator, StateManager, ScreenNavigation, UcsActivityComponent>
+public class UcsUiActivity extends BaseUiActivity<Ui, ScreenNavigation, Coordinator, StateManager, UcsActivityComponent>
         implements Ui, ScreenNavigation {
 
     @Preserve
@@ -72,7 +73,7 @@ public class UcsUiActivity extends BaseUiActivity<Ui, Coordinator, StateManager,
 
     @NonNull
     @Override
-    protected ContractBroker<Ui, Coordinator, ScreenNavigation, StateManager> createContractBroker(@NonNull UcsActivityComponent component) {
+    protected ContractBroker<Ui, ScreenNavigation, Coordinator, StateManager> createContractBroker(@NonNull UcsActivityComponent component) {
         return component.provideContractBroker();
     }
 

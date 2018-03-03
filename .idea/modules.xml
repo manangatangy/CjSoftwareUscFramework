@@ -3,7 +3,10 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ucs-library/ucs-library.iml" filepath="$PROJECT_DIR$/ucs-library/ucs-library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ucs-library-test/ucs-library-test.iml" filepath="$PROJECT_DIR$/ucs-library-test/ucs-library-test.iml" />
       <module fileurl="file://$PROJECT_DIR$/ucs-platform-android/ucs-platform-android.iml" filepath="$PROJECT_DIR$/ucs-platform-android/ucs-platform-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ucs-platform-android-dagger/ucs-platform-android-dagger.iml" filepath="$PROJECT_DIR$/ucs-platform-android-dagger/ucs-platform-android-dagger.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ucs-platform-android-noinject/ucs-platform-android-noinject.iml" filepath="$PROJECT_DIR$/ucs-platform-android-noinject/ucs-platform-android-noinject.iml" />
       <module fileurl="file://$PROJECT_DIR$/ucs-processor/ucs-processor.iml" filepath="$PROJECT_DIR$/ucs-processor/ucs-processor.iml" />
       <module fileurl="file://$PROJECT_DIR$/ucs-testapp/ucs-testapp.iml" filepath="$PROJECT_DIR$/ucs-testapp/ucs-testapp.iml" />
       <module fileurl="file://$PROJECT_DIR$/ucsFramework.iml" filepath="$PROJECT_DIR$/ucsFramework.iml" />

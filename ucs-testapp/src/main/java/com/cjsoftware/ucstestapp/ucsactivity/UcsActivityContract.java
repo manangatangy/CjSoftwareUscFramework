@@ -13,13 +13,13 @@ public interface UcsActivityContract extends BaseUcsContract {
         void requestExit();
     }
 
-    interface Ui extends BaseUiContract<StateManager> {
+    interface Ui extends BaseUiContract {
         void setButtonEnable(boolean enable);
 
         void setTextContent(String text);
     }
 
-    interface Coordinator extends BaseCoordinatorContract<Ui, ScreenNavigation, StateManager> {
+    interface Coordinator extends BaseCoordinatorContract {
         void onUserPressedButton();
 
         void onUserChangedText(String newText);
