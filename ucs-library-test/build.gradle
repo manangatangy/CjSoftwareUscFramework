@@ -1,4 +1,11 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+
+ext {
+    ARTIFACT_ID = "ucs-library-test"
+    NAME = "UCS Testing Library"
+    PACKAGING = 'jar'
+}
 
 android {
     compileSdkVersion 26
@@ -32,3 +39,8 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     implementation project(':ucs-library')
 }
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
+
+apply from: "../maven-publish.gradle"

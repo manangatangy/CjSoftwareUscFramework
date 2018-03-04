@@ -12,8 +12,8 @@ import com.cjsoftware.library.ucs.CoordinatorBinder;
  */
 
 public class FakeContractBroker<UiT extends BaseUiContract,
-        CoordinatorT extends BaseCoordinatorContract,
         ScreenNavigationT extends BaseScreenNavigationContract,
+        CoordinatorT extends BaseCoordinatorContract,
         StateManagerT extends BaseStateManagerContract>
         implements ContractBroker<UiT, ScreenNavigationT, CoordinatorT, StateManagerT> {
 
